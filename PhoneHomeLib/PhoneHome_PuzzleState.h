@@ -27,15 +27,17 @@ Adafruit_NeoPixel statusPixel(STATUS_PIXELS, STATUS_LED_PIN, NEO_RGB + NEO_KHZ80
 // Ready      -- (when told to start puzzle)          --> Initialize
 // Initialize -- (when puzzle is in start config)     --> Playing
 // Playing    -- (when the puzzle has been completed) --> Solved
-typedef enum PuzzleStates {Starting, Ready, Intialize, Playing, Solved} PuzzleStates;
+// Tuning     -- (when in startup and told to tune)   --> Tuning
+typedef enum PuzzleStates {Starting, Ready, Intialize, Playing, Solved, Tuning} PuzzleStates;
 // Character versions of Puzzle State for Debug Printing
-const String puzzleStatesString[] = {"Starting", "Ready", "Intialize", "Playing", "Solved"};
+const String puzzleStatesString[] = {"Starting", "Ready", "Intialize", "Playing", "Solved", "Tuning"};
 // NeoPixel colors representing each state
 const uint32_t puzzleColor[] ={ Adafruit_NeoPixel::Color(255,0,255),   // Startup    = Purple
                                 Adafruit_NeoPixel::Color(0,0,255),     // Ready      = Blue
                                 Adafruit_NeoPixel::Color(255,0,0),     // Initialize = Red
                                 Adafruit_NeoPixel::Color(255,255,0),   // Playing    = Yellow
-                                Adafruit_NeoPixel::Color(0,255,0)};    // Solved     = Green
+                                Adafruit_NeoPixel::Color(0,255,0),     // Solved     = Green
+                                Adafruit_NeoPixel::Color(0,255,255)};  // Tuning     = Cyan
 // Current state of the Puzzle
 PuzzleStates puzzleState = Starting;
 

@@ -31,7 +31,7 @@ int targetNumber = 50;
 void flashDisplays () {
   Serial.println(F("Flashing Displays"));
   // Turn on Lights and other indicators
-  delay(500);
+  delay(FLASH_DISPLAYS_DURATION);
   // Turn off Lights and other indicators
 }
 
@@ -62,6 +62,10 @@ void performStart(String commandArgument) {
   puzzleDifficulty = (commandArgument.length() > 0) ? commandArgument[0] : DIFFICULTY_EASY;
   targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1).toInt() : 50;
   targetNumber = constrain(targetNumber, 0, 255);
+  Serial.print(F("Difficulty: "));
+  Serial.println(puzzleDifficulty);
+  Serial.print(F("Target Number: "));
+  Serial.println(targetNumber);
 }
 
 // Perform the Initialization steps including any randomizations
@@ -97,6 +101,7 @@ void performPlaying() {
 
 void setup() {
   Serial.begin(9600);
+  Serial.println();
   Serial.println(__FILE__);
   Serial.println(F("Compiled: " __DATE__ ", " __TIME__));
   Serial.print(F("Puzzle   ID: "));
@@ -108,6 +113,8 @@ void setup() {
   // Initialize the status pixel and set initial puzzle state
   setupPuzzleStatus();
 
+  Serial.println(F("SETUP complete"));
+  Serial.println();
 }
 
 void loop() {

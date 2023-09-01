@@ -13,13 +13,13 @@
 
 
 // PJON Bus IDs
-#define COMMAND_ID  1
-#define FLIPBITS_ID 2
-#define SLIDER_ID   3
-#define WIRES_ID    4
-#define DIALNUM_ID  5
-#define PHONE_ID    6
-#define TEST_ID     10
+#define COMMAND_ID   1
+#define FLIPBITS_ID  2
+#define SLIDER_ID    3
+#define WIRES_ID     4
+#define SPINDIGIT_ID 5
+#define PHONE_ID     6
+#define TEST_ID      10
 
 // Commands
 const char COMMAND_WAKE   = 'W';  // Wake the device to check that it is there
@@ -28,10 +28,14 @@ const char COMMAND_START  = 'S';  // Start playing the puzzle - numbers followin
 const char COMMAND_INIT   = 'I';  // Waiting for puzzle to be placed in initial considition - control should display instructions
 const char COMMAND_PLAY   = 'P';  // Playing the game - control should display instructions
 const char COMMAND_DONE   = 'D';  // Game has been solved and puzzle is done
+const char COMMAND_TUNE   = 'T';  // Tune settings or Test Values - Remaining commands will be localized
 
 const char DIFFICULTY_EASY   = 'E';
 const char DIFFICULTY_MEDIUM = 'M';
 const char DIFFICULTY_HARD   = 'H';
+
+// Default duration for flashing the displays
+#define FLASH_DISPLAYS_DURATION 1000
 
 // Command variables
 char command = " ";          // String of the command
