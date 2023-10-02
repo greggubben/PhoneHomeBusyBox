@@ -22,18 +22,18 @@
 const int   PuzzleId  = SLIDER_ID;
 const char* PuzzleName = "Slider";
 bool puzzleInitialized = false;
-char puzzleDifficulty = "";
+char puzzleDifficulty = " ";
 
 
 // Slider pins
-const uint8_t slider1Pin = A2;
+const uint8_t slider1Pin = A4;
 const uint8_t slider2Pin = A3;
-const uint8_t slider3Pin = A4;
+const uint8_t slider3Pin = A2;
 
 // Slider LED pins
-const uint8_t slider1LedPin = 2;
+const uint8_t slider1LedPin = 4;
 const uint8_t slider2LedPin = 3;
-const uint8_t slider3LedPin = 4;
+const uint8_t slider3LedPin = 2;
 
 // Analog meter pins
 const uint8_t analogMeterPlusPin = 9;
@@ -50,7 +50,7 @@ int lastSlider3Number = 0;
 // Read a slider value and convert it to 0-9
 int sliderRead(uint8_t sliderPin) {
   int sliderValue = analogRead(sliderPin);
-  return constrain(sliderValue / 100, 0, 9);
+  return 9-constrain(sliderValue / 100, 0, 9);
 }
 
 // Turn on all visible lights and indicators for a little while as a test
@@ -91,7 +91,7 @@ bool puzzleReady() {
 void performWake() {
   flashDisplays();
   sendAck(PuzzleName);
-  setPuzzleState(PuzzleStates::Connected);
+  setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
 }
@@ -103,8 +103,11 @@ void performStart(String commandArgument) {
   clearCommand();
 
   puzzleDifficulty = commandArgument[0];
-  targetNumber = commandArgument.substring(1).toInt();
-
+  targetNumber = commandArgument.substring(1,2).toInt();
+  Serial.print(F("Difficulty = "));
+  Serial.println(puzzleDifficulty);
+  Serial.print(F("Target Num = "));
+  Serial.println(targetNumber);
 }
 
 // Perform the Initialization steps including any randomizations
@@ -257,6 +260,9 @@ void setup() {
   digitalWrite(analogMeterPlusPin, LOW);
   digitalWrite(analogMeterNegPin, LOW);
 
+  setupPJON(PuzzleId);
+
+
   // Initialize the status pixel and set initial puzzle state
   setupPuzzleStatus();
 
@@ -264,13 +270,16 @@ void setup() {
 
 
 void loop() {
+
+  loopPJON();
+
   switch (puzzleState) {
     case PuzzleStates::Starting:
       if (commandReady && command == COMMAND_WAKE) {
         performWake();
       }
       break;
-    case PuzzleStates::Connected:
+    case PuzzleStates::Ready:
       if (commandReady && command == COMMAND_START) {
         performStart(commandArgument);
       }
