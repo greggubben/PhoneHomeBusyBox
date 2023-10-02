@@ -337,7 +337,7 @@ void performPlaying() {
     currentPuzzle++;
   }
 
-  if (!commandSent) {
+  else if (!commandSent) {
 
     sendStart(puzzlePlayOrder[currentPuzzle], puzzleDifficulty, puzzlePlayValues[currentPuzzle].c_str(), puzzlePlayValues[currentPuzzle].length());
     commandSent = true;
