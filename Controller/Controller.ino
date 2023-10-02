@@ -14,6 +14,8 @@
 //#include <SPI.h>
 #include <Adafruit_ILI9341.h>
 #include <XPT2046_Touchscreen.h>
+#include "Melody.h"
+#include "Entertainer.h"
 
 // These definitions make the code more readable from the controller perspective
 // allowing for library reuse and clarity of controller vs puzzle
@@ -29,6 +31,8 @@ const char* ControllerName = "Controller";
 //bool controlInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
 
+//Speaker
+#define SPEAKER_PIN 4
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27,20,4);
@@ -40,15 +44,19 @@ LiquidCrystal_I2C lcd(0x27,20,4);
 #define TS_MAXY 3500
 
 // Touch Screen definitions
-#define TS_CS 7
+#define TS_CS 7   // Connected to LOLIN pin D3
 XPT2046_Touchscreen ts(TS_CS);
 
 // TFT Screen definitions
-#define TFT_CS    8      // TFT CS  pin is connected to arduino pin 8
-#define TFT_RST   9      // TFT RST pin is connected to arduino pin 9
-#define TFT_DC    10     // TFT DC  pin is connected to arduino pin 10
+#define TFT_RST   8    // Connected to LOLIN pin RST
+#define TFT_CS    9      // Connected to LOLIN pin
+#define TFT_DC    10     // Connected to LOLIN pin 
+//#define TFT_MOSO        // Connected to LOLIN pin 
+//#define TFT_MOSI        // Connected to LOLIN pin 
+//#define TFT_SCK         // Connected to LOLIN pin 
 // initialize ILI9341 TFT library
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+//Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #define TFT_WIDTH 320
 #define TFT_HEIGHT 240
 
@@ -95,6 +103,31 @@ unsigned long commandSentAt = 0;
 bool wakeTimeout = false;
 #define TIMEOUT_MILLIS 5000
 
+
+void playMusic(int speakerPin, Note music[]) {
+    
+  // iterate over the notes of the melody:
+  int thisNote=0;
+  while (music[thisNote].note != END_NOTES) {
+  
+    int dur = music[thisNote].duration;
+    
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000/music[thisNote].duration;
+    tone(speakerPin, music[thisNote].note, noteDuration);
+  
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+
+    // stop the tone playing:
+    noTone(speakerPin);
+    thisNote++;
+  }
+}
 
 // Draw just the one puzzle
 void drawWakeStatus (int puzzle) {
@@ -354,6 +387,7 @@ void transitionToSolvedState() {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(F("YOU WON!!!"));
+  playMusic(SPEAKER_PIN, entertainer);
   //lcd.setCursor(0,1);
   //lcd.print(F("Difficulty Level"));
   //lcd.setCursor(0,2);
@@ -372,6 +406,10 @@ void setup()
   Serial.println(ControllerId);
   Serial.print(F("Controller Name: "));
   Serial.println(ControllerName);
+
+  // Speaker
+  pinMode(SPEAKER_PIN, OUTPUT);
+
 
 	// initialize the LCD
   Serial.print(F("Starting LCD ... "));
