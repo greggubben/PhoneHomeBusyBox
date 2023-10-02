@@ -150,7 +150,7 @@ bool puzzleReady() {
 void performWake() {
   flashDisplays();
   sendAck(PuzzleName);
-  setPuzzleState(PuzzleStates::Connected);
+  setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
 }
@@ -267,9 +267,6 @@ void setup() {
   Serial.print(F("Puzzle Name: "));
   Serial.println(PuzzleName);
 
-  // Initialize the status pixel and set initial puzzle state
-  setupPuzzleStatus();
-
   Serial.print(F("MCP23017 . "));
   mcp.begin_I2C();
   Serial.println(F("Started"));
@@ -293,16 +290,24 @@ void setup() {
   Serial.println(F(" Initialized"));
   updateDisplay(0x0000);
 
+  setupPJON(PuzzleId);
+
+  // Initialize the status pixel and set initial puzzle state
+  setupPuzzleStatus();
+
 }
 
 void loop() {
+
+  loopPJON();
+
   switch (puzzleState) {
     case PuzzleStates::Starting:
       if (commandReady && command == COMMAND_WAKE) {
         performWake();
       }
       break;
-    case PuzzleStates::Connected:
+    case PuzzleStates::Ready:
       if (commandReady && command == COMMAND_START) {
         performStart(commandArgument);
       }
