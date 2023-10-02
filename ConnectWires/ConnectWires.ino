@@ -31,7 +31,7 @@ void flashDisplays () {
   for (int p = 0; p < 4; p++) {
     digitalWrite(bitLightPins[p], HIGH);
   }
-  delay(500);
+  delay(FLASH_DISPLAYS_DURATION);
   // Turn off Lights and other indicators
   for (int p = 0; p < 4; p++) {
     digitalWrite(bitLightPins[p], LOW);
@@ -62,7 +62,7 @@ bool puzzleReady() {
 void performWake() {
   flashDisplays();
   sendAck(PuzzleName);
-  setPuzzleState(PuzzleStates::Connected);
+  setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
 }
@@ -192,8 +192,6 @@ void setup() {
   Serial.print(F("Puzzle Name: "));
   Serial.println(PuzzleName);
 
-  // Initialize the status pixel and set initial puzzle state
-  setupPuzzleStatus();
 
   // Set the mode for each of the sets of pins
   for (int p=0; p<4; p++) {
@@ -204,16 +202,24 @@ void setup() {
     digitalWrite(bitLightPins[p], LOW);
   }
 
+  setupPJON(PuzzleId);
+
+  // Initialize the status pixel and set initial puzzle state
+  setupPuzzleStatus();
+
 }
 
 void loop() {
+
+  loopPJON();
+
   switch (puzzleState) {
     case PuzzleStates::Starting:
       if (commandReady && command == COMMAND_WAKE) {
         performWake();
       }
       break;
-    case PuzzleStates::Connected:
+    case PuzzleStates::Ready:
       if (commandReady && command == COMMAND_START) {
         performStart(commandArgument);
       }
