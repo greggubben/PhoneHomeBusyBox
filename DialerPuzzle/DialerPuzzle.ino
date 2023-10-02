@@ -16,7 +16,7 @@
 #include <DFRobotDFPlayerMini.h>
 
 // Puzzle definitions
-const int   PuzzleId  = DIALNUM_ID;
+const int   PuzzleId  = PHONE_ID;
 const char* PuzzleName = "Dial Number";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
@@ -332,9 +332,6 @@ void setup() {
   Serial.print(F("Puzzle Name: "));
   Serial.println(PuzzleName);
 
-  // Initialize the status pixel and set initial puzzle state
-  setupPuzzleStatus();
-
   // Set up the input pins and attach debounce
   pinMode(onlinePin, INPUT_PULLUP);
   onlineSwitch.attach(onlinePin);
@@ -365,9 +362,18 @@ void setup() {
   Serial.println(F("DFPlayer Mini online."));
 
   dfPlayer.volume(DFPLAYER_VOLUME);  //Set volume value. From 0 to 30
+
+  setupPJON(PuzzleId);
+
+  // Initialize the status pixel and set initial puzzle state
+  setupPuzzleStatus();
+
 }
 
 void loop() {
+
+  loopPJON();
+
   switch (puzzleState) {
     case PuzzleStates::Starting:
       if (commandReady && command == COMMAND_WAKE) {
