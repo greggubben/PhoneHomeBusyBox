@@ -16,6 +16,7 @@
 #include <XPT2046_Touchscreen.h>
 #include "Melody.h"
 #include "Entertainer.h"
+#include "Instructions.h"
 
 // These definitions make the code more readable from the controller perspective
 // allowing for library reuse and clarity of controller vs puzzle
@@ -62,7 +63,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 // Display order
 const static int puzzleDisplayOrder[] = {SLIDER_ID, CONTROL_ID, FLIPBITS_ID, WIRES_ID, PHONE_ID, SPINDIGIT_ID};
-const String puzzleDisplayNames[] = {"Slider", "Control", "Flip", "Wires", "Phone", "Spin"};
+//const String puzzleDisplayNames[] = {"Slider", "Control", "Flip", "Wires", "Phone", "Spin"};
 #define PUZZLE_DISPLAY_ORDER_LENGTH 6
 
 
@@ -92,7 +93,7 @@ WakeStates puzzleWakeStatus[ID_ARRAY_LENGTH];
 
 // Game Order
 const static int puzzlePlayOrder[] = {SLIDER_ID, WIRES_ID, FLIPBITS_ID, SPINDIGIT_ID, PHONE_ID};
-const String puzzlePlayNames[] = {"Slider", "Wires", "Flip", "Spin", "Phone"};
+//const String puzzlePlayNames[] = {"Slider", "Wires", "Flip", "Spin", "Phone"};
 const String puzzlePlayValues[] = {"7", "9", "50", "163", "7950163"};  // Hack - upgrade to parsing logic
 #define PUZZLE_PLAY_LENGTH 5
 
@@ -102,6 +103,16 @@ bool commandSent = false;
 unsigned long commandSentAt = 0;
 bool wakeTimeout = false;
 #define TIMEOUT_MILLIS 5000
+
+void printLCD(const char* lines[]) {
+  char lineBuffer[21];
+  lcd.clear();
+  for (int lineNum=0; lineNum<4; lineNum++) {
+    strcpy_P(lineBuffer, pgm_read_word(&(lines[lineNum])));
+    lcd.setCursor(0, lineNum);
+    lcd.print(lineBuffer);
+  }
+}
 
 
 void playMusic(int speakerPin, Note music[]) {
@@ -162,7 +173,7 @@ void drawWakeStatus (int puzzle) {
     tft.setTextSize(2);
     tft.setTextColor(ILI9341_BLACK);
     tft.setCursor(startX, startY);
-    tft.print(puzzleDisplayNames[puzzle]);
+    tft.print(moduleShortNames[puzzle]);
 
 }
 
@@ -276,15 +287,16 @@ void transitionToReadyState() {
   tft.fillScreen(ILI9341_BLACK);
   drawPuzzleDifficulty();
 
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(F("Please select a"));
-  lcd.setCursor(0,1);
-  lcd.print(F("Difficulty Level"));
-  lcd.setCursor(0,2);
-  lcd.print(F("to start the game"));
-  lcd.setCursor(0,3);
-  lcd.print(F("..."));
+  printLCD(Select_Difficulty);
+  //lcd.clear();
+  //lcd.setCursor(0,0);
+  //lcd.print(F("Please select a"));
+  //lcd.setCursor(0,1);
+  //lcd.print(F("Difficulty Level"));
+  //lcd.setCursor(0,2);
+  //lcd.print(F("to start the game"));
+  //lcd.setCursor(0,3);
+  //lcd.print(F("..."));
 
 }
 
@@ -343,7 +355,7 @@ void performPlaying() {
     commandSent = true;
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print(puzzlePlayNames[currentPuzzle]);
+    lcd.print(moduleShortNames[currentPuzzle]);
 
   }
   else {

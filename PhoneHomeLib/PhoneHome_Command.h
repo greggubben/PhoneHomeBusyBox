@@ -26,6 +26,8 @@
 #define MAX_ID 6
 #define ID_ARRAY_LENGTH MAX_ID+1
 
+const static char* moduleShortNames[] ={"", "Control", "Flip", "Slider", "Wires", "Spin", "Phone"}; 
+
 // Commands
 const char COMMAND_WAKE   = 'W';  // Wake the device to check that it is there
 const char COMMAND_ACK    = 'A';  // Acknowledge it is awake and ready to play
