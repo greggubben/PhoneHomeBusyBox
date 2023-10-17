@@ -67,13 +67,13 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
   /* Make use of the payload before sending something, the buffer where payload points to is
      overwritten when a new message is dispatched */
 
-  Serial.print("PJON Length = ");
-  Serial.print(length);
-  Serial.print(" '");
-  for (int c=0; c<length; c++) {
-    Serial.print((char)payload[c]);
-  }
-  Serial.println("'");
+//  Serial.print("PJON Length = ");
+//  Serial.print(length);
+//  Serial.print(" '");
+//  for (int c=0; c<length; c++) {
+//    Serial.print((char)payload[c]);
+//  }
+//  Serial.println("'");
 
   command = payload[0];
   commandArgument = "";
@@ -109,20 +109,24 @@ void loopPJON () {
 }
 
 
+#ifndef PHONEHOME_CONTROLLER
 
 // Print the serial command help
 void printHelpInstructions() {
-  Serial.println(F("Commands for simulating Command:"));
+  Serial.println(F("Commands:"));
   Serial.println(F("'W'     - Wake up"));
   Serial.println(F("'SD###' - Start"));
   Serial.println(F("  ^ ^"));
-  Serial.println(F("  | +---- - Target Number [1-3 digits for puzzle; 7 digits for phone dialer]"));
+  Serial.println(F("  | +---- - Target Number [digits for puzzle]"));
   Serial.println(F("  +------ - Difficulty [E=Easy; M=Medium; H=Hard]"));
   Serial.println();
-  Serial.println(F("Commands for debugging:"));
+  Serial.println(F("Debugging:"));
   Serial.println(F("'P' - Play"));
   Serial.println(F("'D' - Done"));
+  Serial.println(F("'T' - Tune/Test"));
 }
+
+#endif
 
 // After a command has been processed clear the command so it is not processed again
 void clearCommand() {
@@ -146,11 +150,17 @@ void serialEvent() {
     // do something about it:
     if (inChar == '\n') {
       serialInputString.trim();
+
+#ifndef PHONEHOME_CONTROLLER
+
       if (serialInputString[0] == '?') {
         printHelpInstructions();
         serialInputString = "";
         return;
       }
+
+#endif
+
       command = serialInputString[0];
       if (serialInputString.length() > 1) {
         commandArgument = serialInputString.substring(1);
@@ -174,7 +184,7 @@ void serialEvent() {
 
 // Send a Wake to Puzzle
 void sendWake(int puzzleID) {
-  Serial.print(F("Sending Wake to "));
+  Serial.print(F("Send Wake to "));
   Serial.println(puzzleID);
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int commandLength = 0;
@@ -186,7 +196,7 @@ void sendWake(int puzzleID) {
 
 // Send an Acknowledgement to Control
 void sendAck(char* deviceName) {
-  Serial.println(F("Sending ACK to Control"));
+  Serial.println(F("Send ACK to Control"));
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int commandLength = 0;
   commandString[commandLength++] = COMMAND_ACK;
@@ -197,7 +207,7 @@ void sendAck(char* deviceName) {
 
 // Send the Start to Puzzle
 void sendStart(int puzzleID, char difficulty, char* numChars, int numLength) {
-  Serial.print(F("Sending Start to "));
+  Serial.print(F("Send Start to "));
   Serial.println(puzzleID);
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int len = 0;
@@ -213,7 +223,7 @@ void sendStart(int puzzleID, char difficulty, char* numChars, int numLength) {
 
 // Send Initialize to Control so instructions can be displayed
 void sendInitialize() {
-  Serial.println(F("Sending Initialize to Control"));
+  Serial.println(F("Send Initialize to Control"));
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int commandLength = 0;
   commandString[commandLength++] = COMMAND_INIT;
@@ -224,7 +234,7 @@ void sendInitialize() {
 
 // Send Playing to Control so instructions can be displayed
 void sendPlay() {
-  Serial.println(F("Sending Playing to Control"));
+  Serial.println(F("Send Playing to Control"));
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int commandLength = 0;
   commandString[commandLength++] = COMMAND_PLAY;
@@ -235,7 +245,7 @@ void sendPlay() {
 
 // Send Solved to Control so next puzzle can be played
 void sendSolved() {
-  Serial.println(F("Sending Solved to Control"));
+  Serial.println(F("Send Solved to Control"));
   char commandString[MAX_PJON_COMMAND_LENGTH];
   int commandLength = 0;
   commandString[commandLength++] = COMMAND_DONE;

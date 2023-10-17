@@ -157,15 +157,22 @@ void loop() {
       break;
   }
   if (commandReady) {
-    Serial.print(F("Command '"));
-    Serial.print(command);
-    Serial.print(F("' "));
-    if (commandArgument.length() > 0) {
-      Serial.print(F("with args "));
-      Serial.print(commandArgument);
+    if (command == COMMAND_WAKE) {
+      // Could perform wake at any time due to time limit reached
+      performWake();
     }
-    Serial.print(F(" was not processed in state: "));
-    Serial.println(puzzleStatesString[puzzleState]);
+    else {
+      // Unknown command or command not valid in current state
+      Serial.print(F("Command '"));
+      Serial.print(command);
+      Serial.print(F("' "));
+      if (commandArgument.length() > 0) {
+        Serial.print(F("with args "));
+        Serial.print(commandArgument);
+      }
+      Serial.print(F(" was not processed in state: "));
+      Serial.println(puzzleStatesString[puzzleState]);
+    }
     clearCommand();
   }
 }
