@@ -26,20 +26,22 @@
 #define MAX_ID 6
 #define ID_ARRAY_LENGTH MAX_ID+1
 
-const static char* moduleShortNames[] ={"", "Control", "Flip", "Slider", "Wires", "Spin", "Phone"}; 
+//const static char* moduleShortNames[] ={"", "Control", "Flip", "Slider", "Wires", "Spin", "Phone"}; 
 
 // Commands
-const char COMMAND_WAKE   = 'W';  // Wake the device to check that it is there
-const char COMMAND_ACK    = 'A';  // Acknowledge it is awake and ready to play
-const char COMMAND_START  = 'S';  // Start playing the puzzle - numbers following are the target digits 
-const char COMMAND_INIT   = 'I';  // Waiting for puzzle to be placed in initial considition - control should display instructions
-const char COMMAND_PLAY   = 'P';  // Playing the game - control should display instructions
-const char COMMAND_DONE   = 'D';  // Game has been solved and puzzle is done
-const char COMMAND_TUNE   = 'T';  // Tune settings or Test Values - Remaining commands will be localized
+#define COMMAND_WAKE   'W'  // Wake the device to check that it is there
+#define COMMAND_ACK    'A'  // Acknowledge it is awake and ready to play
+#define COMMAND_START  'S'  // Start playing the puzzle - numbers following are the target digits 
+#define COMMAND_INIT   'I'  // Waiting for puzzle to be placed in initial considition - control should display instructions
+#define COMMAND_PLAY   'P'  // Playing the game - control should display instructions
+#define COMMAND_DONE   'D'  // Game has been solved and puzzle is done
+#define COMMAND_LINE   'L'  // Line to display as instructions
+#define COMMAND_NEXT   'N'  // Ready for Next Line to display as instructions
+#define COMMAND_TUNE   'T'  // Tune settings or Test Values - Remaining commands will be localized
 
-const char DIFFICULTY_EASY   = 'E';
-const char DIFFICULTY_MEDIUM = 'M';
-const char DIFFICULTY_HARD   = 'H';
+#define DIFFICULTY_EASY   'E'
+#define DIFFICULTY_MEDIUM 'M'
+#define DIFFICULTY_HARD   'H'
 #define MAX_DIFFICULTIES  3
 
 // Default duration for flashing the displays
@@ -48,16 +50,17 @@ const char DIFFICULTY_HARD   = 'H';
 // PJON Communication
 PJONSoftwareBitBang *bus;
 
-#define MAX_PJON_COMMAND_LENGTH 11
+#define MAX_PJON_COMMAND_LENGTH 25
 
 
 // Command variables
-char command = " ";          // String of the command
-String commandArgument = "";  // String of the command's argument (optional)
+char command = ' ';           // String of the command
+char commandArgument[MAX_PJON_COMMAND_LENGTH] = "";  // String of the command's argument (optional)
 bool commandReady = false;    // Indicates the command is ready for processing
 
 // Serial input for debugging interface
-String serialInputString  = "";         // a String to hold incoming data from the Serial line
+char serialInputString[MAX_PJON_COMMAND_LENGTH]  = "";         // a String to hold incoming data from the Serial line
+uint8_t serialInputLength = 0;
 //bool serialStringComplete = false;      // whether the string is complete
 //const int serialInputStringMaxLen = 10; // Maximum length the input string can be
 
@@ -67,26 +70,20 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
   /* Make use of the payload before sending something, the buffer where payload points to is
      overwritten when a new message is dispatched */
 
-//  Serial.print("PJON Length = ");
-//  Serial.print(length);
-//  Serial.print(" '");
-//  for (int c=0; c<length; c++) {
-//    Serial.print((char)payload[c]);
-//  }
-//  Serial.println("'");
-
   command = payload[0];
-  commandArgument = "";
+  commandArgument[0] = 0;
   if (length > 1) {
-    for (int c=1; c<length; c++) {
-      commandArgument += (char)payload[c];
+    uint8_t argLen = 0;
+    for (uint8_t c=1; c<length && c<MAX_PJON_COMMAND_LENGTH-1; c++) {
+      commandArgument[argLen++] = payload[c];
     }
+    commandArgument[argLen] = 0;
   }
   commandReady = true;
 
   Serial.print(F("PJON Command: "));
   Serial.print(command);
-  if (commandArgument.length() > 0) {
+  if (commandArgument[0] != 0) {
     Serial.print(F(" with argument: "));
     Serial.print(commandArgument);
   }
@@ -132,7 +129,7 @@ void printHelpInstructions() {
 void clearCommand() {
   commandReady = false;
   command = ' ';
-  commandArgument = "";
+  commandArgument[0] = 0;
 }
 
 /*
@@ -145,114 +142,219 @@ void serialEvent() {
     // get the new byte:
     char inChar = (char)Serial.read();
     // add it to the inputString:
-    serialInputString += inChar;
+    serialInputString[serialInputLength++] = inChar;
+    serialInputString[serialInputLength] = 0;
     // if the incoming character is a newline, set a flag so the main loop can
     // do something about it:
     if (inChar == '\n') {
-      serialInputString.trim();
+      serialInputLength--;
+      serialInputString[serialInputLength] = 0;
 
 #ifndef PHONEHOME_CONTROLLER
 
       if (serialInputString[0] == '?') {
         printHelpInstructions();
-        serialInputString = "";
+        serialInputString[0] = 0;
+        serialInputLength = 0;
         return;
       }
 
 #endif
 
       command = serialInputString[0];
-      if (serialInputString.length() > 1) {
-        commandArgument = serialInputString.substring(1);
+      if (serialInputLength > 1) {
+        uint8_t ca = 0;
+        for (uint8_t c=1; c<serialInputLength && c<MAX_PJON_COMMAND_LENGTH-1; c++) {
+          commandArgument[ca++] = serialInputString[c];
+        }
+        commandArgument[ca] = 0;
       }
       else {
-        commandArgument = "";
+        commandArgument[0] = 0;
       }
       commandReady = true;
       Serial.print(F("Serial Command: "));
       Serial.print(command);
-      if (commandArgument.length() > 0) {
+      if (commandArgument[0] != 0) {
         Serial.print(F(" with argument: "));
         Serial.print(commandArgument);
       }
       Serial.println();
-      serialInputString = "";
+      serialInputString[0] = 0;
+      serialInputLength = 0;
     }
   }
+}
+
+// Send a command
+void sendCommand(uint8_t deviceID, char commandByte, char* commandArg, uint8_t argLen) {
+
+  char commandString[MAX_PJON_COMMAND_LENGTH];
+  uint8_t commandLength = 0;
+  commandString[commandLength++] = commandByte;
+
+  if (argLen > 0) {
+    uint8_t argumentLength = argLen;
+    if (argumentLength > MAX_PJON_COMMAND_LENGTH - commandLength) {
+      argumentLength = MAX_PJON_COMMAND_LENGTH - commandLength;
+    }
+    for (int c=0; c<argumentLength; c++) {
+      commandString[commandLength++] = commandArg[c];
+    }
+  }
+  commandString[commandLength] = 0;
+  Serial.print(F("Send '"));
+  Serial.print(commandString);
+  Serial.print(F("' to "));
+  Serial.println(deviceID);
+  //Serial.println(commandString);
+  bus->send(deviceID,commandString,commandLength);
 }
 
 
 // Send a Wake to Puzzle
 void sendWake(int puzzleID) {
-  Serial.print(F("Send Wake to "));
-  Serial.println(puzzleID);
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int commandLength = 0;
-  commandString[commandLength++] = COMMAND_WAKE;
-  commandString[commandLength] = 0;
-  Serial.println(commandString);
-  bus->send(puzzleID,commandString,commandLength);
+  //Serial.print(F("Send Wake to "));
+  //Serial.println(puzzleID);
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_WAKE;
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(puzzleID,commandString,commandLength);
+  sendCommand(puzzleID, COMMAND_WAKE, "", 0);
 }
 
 // Send an Acknowledgement to Control
-void sendAck(char* deviceName) {
-  Serial.println(F("Send ACK to Control"));
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int commandLength = 0;
-  commandString[commandLength++] = COMMAND_ACK;
-  commandString[commandLength] = 0;
-  Serial.println(commandString);
-  bus->send(CONTROL_ID,commandString,commandLength);
+void sendAck(char* argument) {
+  //Serial.println(F("Send ACK to Control"));
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //Serial.println(MAX_PJON_COMMAND_LENGTH);
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_ACK;
+
+  //int argumentLength = strlen(argument);
+  //if (argumentLength > MAX_PJON_COMMAND_LENGTH - commandLength) {
+  //  argumentLength = MAX_PJON_COMMAND_LENGTH - commandLength;
+  //}
+  //for (int c=0; c<argumentLength; c++) {
+  //  commandString[commandLength++] = argument[c];
+  //}
+  
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(CONTROL_ID,commandString,commandLength);
+  sendCommand(CONTROL_ID, COMMAND_ACK, argument, strlen(argument));
 }
 
 // Send the Start to Puzzle
 void sendStart(int puzzleID, char difficulty, char* numChars, int numLength) {
-  Serial.print(F("Send Start to "));
-  Serial.println(puzzleID);
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int len = 0;
-  commandString[len++] = COMMAND_START;
-  commandString[len++] = difficulty;
+  //Serial.print(F("Send Start to "));
+  //Serial.println(puzzleID);
+  char argString[MAX_PJON_COMMAND_LENGTH];
+  uint8_t argLen = 0;
+  //commandString[len++] = COMMAND_START;
+  argString[argLen++] = difficulty;
   for (int n=0; n<numLength; n++) {
-    commandString[len++] = numChars[n];
+    argString[argLen++] = numChars[n];
   }
-  commandString[len] = 0;
-  Serial.println(commandString);
-  bus->send(puzzleID,commandString,len);
+  argString[argLen] = 0;
+  //Serial.println(commandString);
+  //bus->send(puzzleID,commandString,len);
+  sendCommand(puzzleID, COMMAND_START, argString, argLen);
 }
 
 // Send Initialize to Control so instructions can be displayed
-void sendInitialize() {
-  Serial.println(F("Send Initialize to Control"));
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int commandLength = 0;
-  commandString[commandLength++] = COMMAND_INIT;
-  commandString[commandLength] = 0;
-  Serial.println(commandString);
-  bus->send(CONTROL_ID,commandString,commandLength);
+void sendInitialize(char* argument) {
+  //Serial.println(F("Send Initialize to Control"));
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_INIT;
+
+  //int argumentLength = strlen(argument);
+  //if (argumentLength > MAX_PJON_COMMAND_LENGTH - commandLength) {
+  //  argumentLength = MAX_PJON_COMMAND_LENGTH - commandLength;
+  //}
+  //for (int c=0; c<argumentLength; c++) {
+  //  commandString[commandLength++] = argument[c];
+  //}
+  
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(CONTROL_ID,commandString,commandLength);
+  sendCommand(CONTROL_ID, COMMAND_INIT, argument, strlen(argument));
 }
 
 // Send Playing to Control so instructions can be displayed
-void sendPlay() {
-  Serial.println(F("Send Playing to Control"));
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int commandLength = 0;
-  commandString[commandLength++] = COMMAND_PLAY;
-  commandString[commandLength] = 0;
-  Serial.println(commandString);
-  bus->send(CONTROL_ID,commandString,commandLength);
+void sendPlay(char* argument) {
+  //Serial.println(F("Send Playing to Control"));
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_PLAY;
+
+  //uint8_t argumentLength = strlen(argument);
+  //if (argumentLength > MAX_PJON_COMMAND_LENGTH - commandLength) {
+  //  argumentLength = MAX_PJON_COMMAND_LENGTH - commandLength;
+  //}
+  //for (int c=0; c<argumentLength; c++) {
+  //  commandString[commandLength++] = argument[c];
+  //}
+  
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(CONTROL_ID,commandString,commandLength);
+  sendCommand(CONTROL_ID, COMMAND_PLAY, argument, strlen(argument));
+}
+
+// Send a Line to Control
+void sendLine(char* lineText) {
+  //Serial.println(F("Send Line to Control"));
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_LINE;
+  //uint8_t lineLength = strlen(lineText);
+  //if (lineLength > MAX_PJON_COMMAND_LENGTH - commandLength) {
+  //  lineLength = MAX_PJON_COMMAND_LENGTH - commandLength;
+  //}
+  //for (int c=0; c<lineLength; c++) {
+  //  commandString[commandLength++] = lineText[c];
+  //}
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(CONTROL_ID,commandString,commandLength);
+  sendCommand(CONTROL_ID, COMMAND_LINE, lineText, strlen(lineText));
+}
+
+// Send a Next line request to Puzzle
+void sendNext(int puzzleID) {
+  //Serial.print(F("Send Next to "));
+  //Serial.println(puzzleID);
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_NEXT;
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(puzzleID,commandString,commandLength);
+  sendCommand(puzzleID, COMMAND_NEXT, "", 0);
 }
 
 // Send Solved to Control so next puzzle can be played
-void sendSolved() {
+void sendSolved(bool doneInstructions = false) {
   Serial.println(F("Send Solved to Control"));
-  char commandString[MAX_PJON_COMMAND_LENGTH];
-  int commandLength = 0;
-  commandString[commandLength++] = COMMAND_DONE;
-  commandString[commandLength] = 0;
-  Serial.println(commandString);
-  bus->send(CONTROL_ID,commandString,commandLength);
+  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  //uint8_t commandLength = 0;
+  //commandString[commandLength++] = COMMAND_DONE;
+  uint8_t argLen = 0;
+  if (doneInstructions) {
+    //commandString[commandLength++] = 'Y';
+    argLen = 1;
+  }
+  //commandString[commandLength] = 0;
+  //Serial.println(commandString);
+  //bus->send(CONTROL_ID,commandString,commandLength);
+  sendCommand(CONTROL_ID, COMMAND_DONE, "Y", argLen);
 }
+
 
 
 #endif // PHONEHOME_COMMAND_HANDLING_H

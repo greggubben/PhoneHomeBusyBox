@@ -54,6 +54,7 @@ void setPuzzleState(PuzzleStates newPuzzleState) {
   puzzleState = newPuzzleState;
 #ifndef PHONEHOME_CONTROLLER
   statusPixel.setPixelColor(0, statusPixel.gamma32(puzzleColor[puzzleState]));
+  //statusPixel.setPixelColor(0, puzzleColor[puzzleState]);
   statusPixel.show();
 #endif
   Serial.print(F("New Status = "));

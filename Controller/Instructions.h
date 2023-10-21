@@ -5,13 +5,14 @@
 
 // All Definitions
 //                                "                    "
-const char To_Init[] PROGMEM    = "Initialize Puzzle";
-const char To_Play[] PROGMEM    = "Play Puzzle";
+const char To_Init[] = "Initialize Puzzle";
+const char To_Play[] = "Play Puzzle";
+const char To_Done[] = "Determine Number";
 const char Blank_Line[] PROGMEM = "";
 
 
 // Controller
-const char Controller_Name[] PROGMEM =   "Controller";
+//const char Controller_Name[] PROGMEM =   "Controller";
 
 // Select Difficulty
 //                                         "                    "
@@ -57,9 +58,10 @@ const char *const OutOfTime[] PROGMEM =       // Display Winner
   PlayAgain_2
 };
 
-
+/*
 // Flip Definitions
 const char Flip_Name[] PROGMEM =   "Flip the Bits";
+
 
 //                                 "                    "
 const char Flip_Init_1[] PROGMEM = "Flip All Switches";
@@ -89,8 +91,10 @@ const char *const Flip_Play[] PROGMEM =       // Instructions for Playing Puzzle
 
 
 
+
 // Slider Definitions
 const char Slider_Name[] PROGMEM =   "Slide into Home";
+
 
 //                                   "                    "
 const char Slider_Init_1[] PROGMEM = "Move All Sliders";
@@ -119,8 +123,10 @@ const char *const Slider_Play[] PROGMEM =       // Instructions for Playing Puzz
 };
 
 
+
 // Wires Definitions
 const char Wires_Name[] PROGMEM =   "Hook Me Up";
+
 
 //                                  "                    "
 const char Wires_Init_1[] PROGMEM = "Disconnect All Wires";
@@ -148,8 +154,10 @@ const char *const Wires_Play[] PROGMEM =       // Instructions for Playing Puzzl
 };
 
 
+
 // Spin Digits Definitions
 const char Spin_Name[] PROGMEM =    "Spin to Win";
+
 
 //                                  "                    "
 const char Spin_Init_1[] PROGMEM =  "Turn all Dials";
@@ -176,6 +184,7 @@ const char *const Spin_Play[] PROGMEM =       // Instructions for Playing Puzzle
   Spin_Play_3,
   Spin_Play_4
 };
+
 
 
 // Phone Definitions
@@ -207,4 +216,4 @@ const char *const Phone_Play[] PROGMEM =       // Instructions for Playing Puzzl
   Phone_Play_3,
   Phone_Play_4
 };
-
+*/
