@@ -20,7 +20,8 @@
 
 // Puzzle definitions
 const int   PuzzleId  = SLIDER_ID;
-const char* PuzzleName = "Slider";
+const char* PuzzleShortName = "Slider";
+const char* PuzzleLongName = "Slide into Home";
 bool puzzleInitialized = false;
 char puzzleDifficulty = " ";
 
@@ -47,6 +48,54 @@ int lastSlider2Number = 0;
 int lastSlider3Number = 0;
 
 
+// Instuctions
+int instructionLine = 0;
+
+//
+// Instrutions for initializing the puzzle
+//
+// Limit to 20 chars         "                    "
+const char Init_1[] = "Move All Sliders";
+const char Init_2[] = "Down to Bottom";
+
+const char *const Init[] =
+{   
+  Init_1,
+  Init_2
+};
+
+const int initLines = 2;
+
+//
+// Instructions for playing puzzle
+//
+// Limit to 20 chars         "                    "
+const char Play_1[] = "Adjust Sliders until";
+const char Play_2[] = "All LEDS are ON";
+
+const char *const Play[] =
+{   
+  Play_1,
+  Play_2
+};
+
+const int playLines = 2;
+
+//
+// Instructions for determining number
+//
+// Limit to 20 chars  "                    "
+const char Done_1[] = "The Number will the";
+const char Done_2[] = "Value on the Meter";
+
+const char *const Done[] =
+{   
+  Done_1,
+  Done_2
+};
+
+const int doneLines = 2;
+
 // Read a slider value and convert it to 0-9
 int sliderRead(uint8_t sliderPin) {
   int sliderValue = analogRead(sliderPin);
@@ -62,10 +111,10 @@ void flashDisplays () {
   digitalWrite(slider3LedPin, HIGH);
   digitalWrite(analogMeterPlusPin, HIGH);
   digitalWrite(analogMeterNegPin, LOW);
-  delay(1000);
+  delay(FLASH_DISPLAYS_DURATION);
   digitalWrite(analogMeterPlusPin, LOW);
   digitalWrite(analogMeterNegPin, HIGH);
-  delay(1000);
+  delay(FLASH_DISPLAYS_DURATION);
   // Turn off Lights and other indicators
   digitalWrite(slider1LedPin, LOW);
   digitalWrite(slider2LedPin, LOW);
@@ -90,7 +139,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleName);
+  sendAck(PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -116,13 +165,15 @@ void performInitialize() {
     puzzleInitialized = true;
     if (!puzzleReady()) {
       // Need to let Command know we will be in this state for a while
-      sendInitialize();
+      sendInitialize(PuzzleLongName);
+      instructionLine = 0;
     }
   }
   if (puzzleReady()) {
     // Good to go - Let's play
     // Inform Command we are playing
-    sendPlay();
+    sendPlay(PuzzleLongName);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Playing);
   }
 }
@@ -222,7 +273,8 @@ void performPlaying() {
 
   if (puzzleSolved) {
     // Inform Command the puzzle has been solved
-    sendSolved();
+    sendSolved(true);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Solved);
 
   }
@@ -237,7 +289,7 @@ void setup() {
   Serial.print(F("Puzzle   ID: "));
   Serial.println(PuzzleId);
   Serial.print(F("Puzzle Name: "));
-  Serial.println(PuzzleName);
+  Serial.println(PuzzleShortName);
 
   // Set up the slider input pins
   pinMode(slider1Pin, INPUT);
@@ -285,6 +337,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Intialize:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < initLines) {
+          sendLine(Init[instructionLine++]);
+        }
+        clearCommand();
+      }
       performInitialize();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_PLAY) {
@@ -293,6 +351,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Playing:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < playLines) {
+          sendLine(Play[instructionLine++]);
+        }
+        clearCommand();
+      }
       performPlaying();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_DONE) {
@@ -301,8 +365,11 @@ void loop() {
       }
       break;
     case PuzzleStates::Solved:
-      if (commandReady && command == COMMAND_WAKE) {
-        performWake();
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < doneLines) {
+          sendLine(Done[instructionLine++]);
+        }
+        clearCommand();
       }
       break;
     default:
@@ -311,15 +378,21 @@ void loop() {
       break;
   }
   if (commandReady) {
-    Serial.print(F("Command '"));
-    Serial.print(command);
-    Serial.print(F("' "));
-    if (commandArgument.length() > 0) {
-      Serial.print(F("with args "));
-      Serial.print(commandArgument);
+    if (command == COMMAND_WAKE) {
+      // Could perform wake at any time due to time limit reached
+      performWake();
     }
-    Serial.print(F(" was not processed in state: "));
-    Serial.println(puzzleStatesString[puzzleState]);
+    else {
+      Serial.print(F("Command '"));
+      Serial.print(command);
+      Serial.print(F("' "));
+      if (commandArgument[0] != 0) {
+        Serial.print(F("with args "));
+        Serial.print(commandArgument);
+      }
+      Serial.print(F(" was not processed in state: "));
+      Serial.println(puzzleStatesString[puzzleState]);
+    }
     clearCommand();
   }
 
