@@ -28,6 +28,7 @@
 
 // Puzzle definitions
 const uint8_t   ControllerId  = CONTROL_ID;
+const char* ControllerShortName = "Control";
 const char* ControllerName = "Controller";
 //bool controlInitialized = false;
 #define MAX_MINUTES 30
@@ -166,7 +167,7 @@ bool wakeTimeout = false;
 
 #define BOT_LINE_Y STATUS_START_Y - PADDING - LINE_HEIGHT
 
-char puzzleShortNames[ID_ARRAY_LENGTH][11] ={"", "Control", "2?", "3?", "4?", "5?", "6?"}; 
+//char puzzleShortNames[ID_ARRAY_LENGTH][11] ={"", "Control", "2?", "3?", "4?", "5?", "6?"}; 
 //char names[ID_ARRAY_LENGTH][20] = {"", "", "", "", "", "", ""};
 //const char* const fullNames[] = {Controller_Name, Controller_Name, Flip_Name, Slider_Name, Wires_Name, Spin_Name, Phone_Name};
 //const char* const *initInstructions[] = {Select_Difficulty, Select_Difficulty, Flip_Init, Slider_Init, Wires_Init, Spin_Init, Phone_Init};
@@ -296,7 +297,7 @@ void playMusic(int speakerPin, Note music[]) {
 }
 
 // Draw just the one puzzle
-void drawWakeStatus (uint8_t puzzle) {
+void drawWakeStatus (uint8_t puzzle, char *puzzleName) {
     uint8_t thisPuzzleID = puzzleDisplayOrder[puzzle];
     uint8_t row = puzzle / 3;
     uint8_t col = puzzle % 3;
@@ -323,19 +324,21 @@ void drawWakeStatus (uint8_t puzzle) {
     //tft.fillRoundRect(startX, startY, width, height, PUZZLE_RADIUS, boxBackgroundColor);
 
     // Draw Labels
-    startX += (PUZZLE_WIDTH - (strlen(puzzleShortNames[thisPuzzleID]) * PUZZLE_TEXT_CHAR_WIDTH))/2;
+    startX += (PUZZLE_WIDTH - (strlen(puzzleName) * PUZZLE_TEXT_CHAR_WIDTH))/2;
     startY += (PUZZLE_HEIGHT-PUZZLE_TEXT_CHAR_HEIGHT)/2;
     tft.setTextSize(PUZZLE_TEXT_SIZE);
     tft.setTextColor(PUZZLE_TEXT_COLOR);
     tft.setCursor(startX, startY);
-    tft.print(puzzleShortNames[thisPuzzleID]);
+    tft.print(puzzleName);
 
 }
 
 // Draw all the puzzles
 void drawWakeStatus () {
+  char wakingPuzzleName[] = "??";
   for (uint8_t puzzle=0; puzzle<PUZZLE_DISPLAY_ORDER_LENGTH; puzzle++) {
-    drawWakeStatus(puzzle);
+    wakingPuzzleName[0] = '0' + puzzleDisplayOrder[puzzle];
+    drawWakeStatus(puzzle, wakingPuzzleName);
   }
 }
 
@@ -348,9 +351,10 @@ void transitionToWakeState() {
   setupControllerStatus();
 
   for (uint8_t puzzle=0; puzzle<PUZZLE_DISPLAY_ORDER_LENGTH; puzzle++) {
-    puzzleWakeStatus[puzzleDisplayOrder[puzzle]] = (puzzleDisplayOrder[puzzle] == CONTROL_ID) ? WakeStates::Awake : WakeStates::Unknown;
+    puzzleWakeStatus[puzzleDisplayOrder[puzzle]] = WakeStates::Unknown;
   }
   currentPuzzle = 0;
+  currentPuzzleID = puzzleDisplayOrder[currentPuzzle];
   commandSent = false;
   wakeTimeout = false;
 
@@ -365,44 +369,54 @@ void transitionToWakeState() {
 
 // Wake up all the Puzzles
 void performWake() {
+  bool next = false;
   if (puzzleDisplayOrder[currentPuzzle] == CONTROL_ID) {
     Serial.println(F("Skipping Controller"));
-    currentPuzzle++;
+    puzzleWakeStatus[currentPuzzleID] = WakeStates::Awake;
+    drawWakeStatus(currentPuzzle, ControllerShortName);
+    next = true;
   }
 
-  if (!commandSent) {
+  else if (!commandSent) {
     //Serial.print(F("Waking "));
     //Serial.println(puzzleDisplayOrder[currentPuzzle]);
-    sendWake(puzzleDisplayOrder[currentPuzzle]);
-    puzzleWakeStatus[puzzleDisplayOrder[currentPuzzle]] = WakeStates::Asked;
+    sendWake(currentPuzzleID);
+    puzzleWakeStatus[currentPuzzleID] = WakeStates::Asked;
     commandSent = true;
     commandSentAt = millis();
-    drawWakeStatus(currentPuzzle);
+    char wakingPuzzleName[] = "??";
+    wakingPuzzleName[0] = '0' + currentPuzzleID;
+    drawWakeStatus(currentPuzzle, wakingPuzzleName);
   }
   else {
     if (commandReady && command == COMMAND_ACK) {
       Serial.print(F("ACK Received from "));
       Serial.println(commandArgument);
-      puzzleWakeStatus[puzzleDisplayOrder[currentPuzzle]] = WakeStates::Awake;
-      strncpy(puzzleShortNames[puzzleDisplayOrder[currentPuzzleID]], commandArgument, 11);
+      puzzleWakeStatus[currentPuzzleID] = WakeStates::Awake;
+      //strncpy(puzzleShortNames[puzzleDisplayOrder[currentPuzzleID]], commandArgument, 11);
       //puzzleShortNames[currentPuzzle][9] = 0;
-      drawWakeStatus(currentPuzzle);
+      drawWakeStatus(currentPuzzle, commandArgument);
 
       // Move on to Next puzzle
-      currentPuzzle++;
-      commandSent = false;
+      next = true;
       clearCommand();
     }
     else if ((millis() - commandSentAt) > TIMEOUT_MILLIS) {
       Serial.println(F("Timeout"));
       puzzleWakeStatus[puzzleDisplayOrder[currentPuzzle]] = WakeStates::Timedout;
       wakeTimeout = true;
-      drawWakeStatus(currentPuzzle);
+      char wakingPuzzleName[] = "??";
+      wakingPuzzleName[0] = '0' + currentPuzzleID;
+      drawWakeStatus(currentPuzzle, wakingPuzzleName);
+      next = true;
+    }
+  }
 
+  if (next) {
       // Move on to Next puzzle
       currentPuzzle++;
+      currentPuzzleID = puzzleDisplayOrder[currentPuzzle];
       commandSent = false;
-    }
   }
 
   if (currentPuzzle >= PUZZLE_DISPLAY_ORDER_LENGTH) {
