@@ -15,7 +15,8 @@
 
 // Puzzle definitions
 const int   PuzzleId  = SPINDIGIT_ID;
-const char* PuzzleName = "Spin Digit";
+const char* PuzzleShortName = "Spin";
+const char* PuzzleLongName = "Spin to Win";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
 
@@ -46,6 +47,58 @@ int initDigits[3] = {0,0,0};
 // for tuning
 int tuneValue = 0;
 int lastTuneValue = 0;
+
+// Instuctions
+int instructionLine = 0;
+
+//
+// Instrutions for initializing the puzzle
+//
+// Limit to 20 chars  "                    "
+const char Init_1[] =  "Turn all Dials";
+const char Init_2[] =  "to Zero.";
+
+const char *const Init[] =
+{   
+  Init_1,
+  Init_2
+};
+
+const int initLines = 2;
+
+//
+// Instructions for playing puzzle
+//
+// Limit to 20 chars  "                    "
+const char Play_1[] = "Make the LED bars";
+const char Play_2[] = "dissappear by";
+const char Play_3[] = "spinning each dial.";
+//const char Play_4[] = "dial.";
+
+const char *const Play[] =
+{   
+  Play_1,
+  Play_2,
+  Play_3
+};
+
+const int playLines = 3;
+
+//
+// Instructions for determining number
+//
+// Limit to 20 chars  "                    "
+const char Done_1[] = "Number is on the";
+const char Done_2[] = "Dials.";
+
+const char *const Done[] =
+{   
+  Done_1,
+  Done_2
+};
+
+const int doneLines = 2;
+
 
 // digit to pwm value
 void pwmWrite (uint8_t pin, int digit) {
@@ -106,7 +159,7 @@ void flashDisplays () {
   digitalWrite(DIAL_LIGHT_PIN, HIGH);
   digitalWrite(ODD_BAR_PIN, HIGH);
   digitalWrite(EVEN_BAR_PIN, HIGH);
-  delay(1000);
+  delay(FLASH_DISPLAYS_DURATION);
   // Turn off Lights and other indicators
   digitalWrite(DIAL_LIGHT_PIN, LOW);
   digitalWrite(ODD_BAR_PIN, LOW);
@@ -149,7 +202,7 @@ void displayDigitsAway(int current[3], int target[3]) {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleName);
+  sendAck(PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -159,7 +212,7 @@ void performWake() {
 void performTune(char command) {
   switch (command) {
     case COMMAND_TUNE:
-      sendAck(PuzzleName);
+      //sendAck(PuzzleName);
       setPuzzleState(PuzzleStates::Tuning);
       tuneValue = 0;
       lastTuneValue = -1;
@@ -191,7 +244,7 @@ void performStart(String commandArgument) {
   clearCommand();
 
   puzzleDifficulty = (commandArgument.length() > 0) ? commandArgument[0] : DIFFICULTY_EASY;
-  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1).toInt() : 163;
+  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1).toInt() : targetNumber;
   targetNumber = constrain(targetNumber, 0, 999);
   targetDigits[2] = targetNumber/100;
   targetDigits[1] = (targetNumber%100)/10;
@@ -245,7 +298,8 @@ void performInitialize() {
 
     if (!puzzleReady()) {
       // Need to let Command know we will be in this state for a while
-      sendInitialize();
+      sendInitialize(PuzzleLongName);
+      instructionLine = 0;
     }
   }
 
@@ -258,7 +312,8 @@ void performInitialize() {
   if (puzzleReady()) {
     // Good to go - Let's play
     // Inform Command we are playing
-    sendPlay();
+    sendPlay(PuzzleLongName);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Playing);
   }
 }
@@ -279,7 +334,8 @@ void performPlaying() {
   if (puzzleSolved) {
     // Inform Command the puzzle has been solved
     digitalWrite(DIAL_LIGHT_PIN, LOW);
-    sendSolved();
+    sendSolved(true);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Solved);
   }
 }
@@ -293,7 +349,7 @@ void setup() {
   Serial.print(F("Puzzle   ID: "));
   Serial.println(PuzzleId);
   Serial.print(F("Puzzle Name: "));
-  Serial.println(PuzzleName);
+  Serial.println(PuzzleShortName);
 
   Serial.print(F("MCP23017 . "));
   mcp.begin_I2C();
@@ -349,6 +405,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Intialize:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < initLines) {
+          sendLine(Init[instructionLine++]);
+        }
+        clearCommand();
+      }
       performInitialize();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_PLAY) {
@@ -357,6 +419,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Playing:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < playLines) {
+          sendLine(Play[instructionLine++]);
+        }
+        clearCommand();
+      }
       performPlaying();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_DONE) {
@@ -365,10 +433,13 @@ void loop() {
       }
       break;
     case PuzzleStates::Solved:
-      digitalWrite(DIAL_LIGHT_PIN, LOW);
-      if (commandReady && command == COMMAND_WAKE) {
-        performWake();
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < doneLines) {
+          sendLine(Done[instructionLine++]);
+        }
+        clearCommand();
       }
+      digitalWrite(DIAL_LIGHT_PIN, LOW);
       break;
     default:
       Serial.print(F("Invalid State: "));
@@ -376,15 +447,20 @@ void loop() {
       break;
   }
   if (commandReady) {
-    Serial.print(F("Command '"));
-    Serial.print(command);
-    Serial.print(F("' "));
-    if (commandArgument.length() > 0) {
-      Serial.print(F("with args "));
-      Serial.print(commandArgument);
+    if (commandReady && command == COMMAND_WAKE) {
+      performWake();
     }
-    Serial.print(F(" was not processed in state: "));
-    Serial.println(puzzleStatesString[puzzleState]);
+    else {
+      Serial.print(F("Command '"));
+      Serial.print(command);
+      Serial.print(F("' "));
+      if (commandArgument[0] != 0) {
+        Serial.print(F("with args "));
+        Serial.print(commandArgument);
+      }
+      Serial.print(F(" was not processed in state: "));
+      Serial.println(puzzleStatesString[puzzleState]);
+    }
     clearCommand();
   }
 }
