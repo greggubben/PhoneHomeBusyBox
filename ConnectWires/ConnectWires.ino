@@ -10,18 +10,72 @@
 
 // Puzzle definitions
 const int   PuzzleId  = WIRES_ID;
-const char* PuzzleName = "Wires";
+const char* PuzzleShortName = "Wires";
+const char* PuzzleLongName = "Hook Me Up";
 bool puzzleInitialized = false;
-char puzzleDifficulty = DIFFICULTY_EASY;
+char puzzleDifficulty = " ";
 
 
 // Pin definitions
-int driverPins[]  = {5,4,3,2};
-int receivePins[] = {9,8,7,6};
+int driverPins[]  = {9,8,7,6};
+int receivePins[] = {5,4,3,2};
 int bitLightPins[]  = {A2, A3, A4, A5};
 int puzzleDriverPins[4];
+int puzzleReceivePins[4];
 
 byte targetNumber = 9;
+
+// Instuctions
+int instructionLine = 0;
+
+//
+// Instrutions for initializing the puzzle
+//
+// Limit to 20 chars  "                    "
+const char Init_1[] = "Disconnect All Wires";
+
+const char *const Init[] =
+{   
+  Init_1
+};
+
+const int initLines = 1;
+
+//
+// Instructions for playing puzzle
+//
+// Limit to 20 chars          "                    "
+const char Play_1[] = "Connect Wires across";
+const char Play_2[] = "Top & Bottom rows";
+const char Play_3[] = "Turn On Lights Off";
+const char Play_4[] = "Turn Off Lights On";
+
+const char *const Play[] =
+{   
+  Play_1,
+  Play_2,
+  Play_3,
+  Play_4
+};
+
+const int playLines = 4;
+
+//
+// Instructions for determining number
+//
+// Limit to 20 chars  "                    "
+const char Done_1[] = "Use Hexadaisy to";
+const char Done_2[] = "convert lights in";
+const char Done_3[] = "Binary to Decimal.";
+
+const char *const Done[] =
+{   
+  Done_1,
+  Done_2,
+  Done_3
+};
+
+const int doneLines = 3;
 
 
 // Turn on all visible lights and indicators for a little while as a test
@@ -61,7 +115,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleName);
+  sendAck(PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -74,8 +128,12 @@ void performStart(String commandArgument) {
   clearCommand();
 
   puzzleDifficulty = (commandArgument.length() > 0) ? commandArgument[0] : DIFFICULTY_EASY;
-  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1).toInt() : 9;
+  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1,2).toInt() : targetNumber;
   targetNumber = constrain(targetNumber, 0, 15);
+  Serial.print(F("Difficulty = "));
+  Serial.println(puzzleDifficulty);
+  Serial.print(F("Target Num = "));
+  Serial.println(targetNumber);
 }
 
 // Perform the Initialization steps including any randomizations
@@ -85,17 +143,34 @@ void performInitialize() {
   if (!puzzleInitialized) {
     puzzleInitialized = true;
 
+    int remainingPins[4];
+
+    // Start with no randomizing
+    for (int p=0; p<4; p++) {
+      puzzleDriverPins[p] = driverPins[p];
+      puzzleReceivePins[p] = receivePins[p];
+    }
     switch (puzzleDifficulty) {
+
       case DIFFICULTY_EASY:
       default:
-        for (int p=0; p<4; p++) {
-          puzzleDriverPins[p] = driverPins[p];
-        }
+        // No randomizing
         break;
       case DIFFICULTY_HARD:
+        // Randomize the receivePins
+        for (int p=0; p<4; p++) {
+          remainingPins[p] = receivePins[p];
+        }
+        for (int p=0; p<4; p++) {
+          int leftPins = 4-p;
+          int rndPos = random(leftPins);
+          puzzleReceivePins[p] = remainingPins[rndPos];
+          remainingPins[rndPos] = remainingPins[leftPins-1];
+        }
+
+        // Conitnue on to randomize the driverPins like Medium difficulty
       case DIFFICULTY_MEDIUM:
         // Randomize the driverPins
-        int remainingPins[4];
         for (int p=0; p<4; p++) {
           remainingPins[p] = driverPins[p];
         }
@@ -105,23 +180,26 @@ void performInitialize() {
           puzzleDriverPins[p] = remainingPins[rndPos];
           remainingPins[rndPos] = remainingPins[leftPins-1];
         }
-        for (int p=0; p<4; p++) {
-          Serial.print(F("Driver: "));
-          Serial.print(driverPins[p]);
-          Serial.print(F(" --> "));
-          Serial.print(puzzleDriverPins[p]);
-          Serial.print(F(" to Receiver: "));
-          Serial.print(receivePins[p]);
-          Serial.print(F(" for Light: "));
-          Serial.print(bitLightPins[p]);
-          Serial.println();
-        }
         break;
+    }
+    for (int p=0; p<4; p++) {
+      Serial.print(F("Driver: "));
+      Serial.print(driverPins[p]);
+      Serial.print(F(" --> "));
+      Serial.print(puzzleDriverPins[p]);
+      Serial.print(F(" to Receiver: "));
+      Serial.print(receivePins[p]);
+      Serial.print(F(" --> "));
+      Serial.print(puzzleReceivePins[p]);
+      Serial.print(F(" for Light: "));
+      Serial.print(bitLightPins[p]);
+      Serial.println();
     }
 
     if (!puzzleReady()) {
       // Need to let Command know we will be in this state for a while
-      sendInitialize();
+      sendInitialize(PuzzleLongName);
+      instructionLine = 0;
     }
   }
 
@@ -129,7 +207,8 @@ void performInitialize() {
   if (puzzleReady()) {
     // Good to go - Let's play
     // Inform Command we are playing
-    sendPlay();
+    sendPlay(PuzzleLongName);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Playing);
   }
 }
@@ -150,7 +229,7 @@ void performPlaying() {
 
     // Read the wires
     digitalWrite(puzzleDriverPins[p], LOW);
-    byte r = digitalRead(receivePins[p]);
+    byte r = digitalRead(puzzleReceivePins[p]);
     digitalWrite(puzzleDriverPins[p], HIGH);
     if (r == 0) {
       wiresConnected++;
@@ -175,7 +254,8 @@ void performPlaying() {
 
   if (puzzleSolved) {
     // Inform Command the puzzle has been solved
-    sendSolved();
+    sendSolved(true);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Solved);
   }
 
@@ -190,7 +270,7 @@ void setup() {
   Serial.print(F("Puzzle   ID: "));
   Serial.println(PuzzleId);
   Serial.print(F("Puzzle Name: "));
-  Serial.println(PuzzleName);
+  Serial.println(PuzzleShortName);
 
 
   // Set the mode for each of the sets of pins
@@ -225,6 +305,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Intialize:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < initLines) {
+          sendLine(Init[instructionLine++]);
+        }
+        clearCommand();
+      }
       performInitialize();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_PLAY) {
@@ -233,6 +319,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Playing:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < playLines) {
+          sendLine(Play[instructionLine++]);
+        }
+        clearCommand();
+      }
       performPlaying();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_DONE) {
@@ -241,8 +333,11 @@ void loop() {
       }
       break;
     case PuzzleStates::Solved:
-      if (commandReady && command == COMMAND_WAKE) {
-        performWake();
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < doneLines) {
+          sendLine(Done[instructionLine++]);
+        }
+        clearCommand();
       }
       break;
     default:
@@ -251,15 +346,20 @@ void loop() {
       break;
   }
   if (commandReady) {
-    Serial.print(F("Command '"));
-    Serial.print(command);
-    Serial.print(F("' "));
-    if (commandArgument.length() > 0) {
-      Serial.print(F("with args "));
-      Serial.print(commandArgument);
+    if (commandReady && command == COMMAND_WAKE) {
+      performWake();
     }
-    Serial.print(F(" was not processed in state: "));
-    Serial.println(puzzleStatesString[puzzleState]);
+    else {
+      Serial.print(F("Command '"));
+      Serial.print(command);
+      Serial.print(F("' "));
+      if (commandArgument[0] != 0) {
+        Serial.print(F("with args "));
+        Serial.print(commandArgument);
+      }
+      Serial.print(F(" was not processed in state: "));
+      Serial.println(puzzleStatesString[puzzleState]);
+    }
     clearCommand();
   }
 
