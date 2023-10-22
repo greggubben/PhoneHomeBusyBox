@@ -26,6 +26,13 @@ bool puzzleInitialized = false;
 char puzzleDifficulty = " ";
 
 
+// Tuning Commands
+#define TUNE_COMMAND_UP   'U'  // Go up in value
+#define TUNE_COMMAND_DOWN 'D'  // Go down in value
+
+int16_t tuneValue = 0;
+int16_t lastTuneValue = 0;
+
 // Slider pins
 const uint8_t slider1Pin = A4;
 const uint8_t slider2Pin = A3;
@@ -47,6 +54,10 @@ int lastSlider1Number = 0;
 int lastSlider2Number = 0;
 int lastSlider3Number = 0;
 
+// Number (-15 to +15) to PWM Values (-255 to +255)
+const int16_t Number2PWMValue[] = {-255, -254, -238, -219, -200, -182, -163, -144, -126, -107,  -89,  -70,  -53,  -34,  -16,
+                                      0,
+                                     20,   39,   57,   76,   95,  113,  132,  151,  170,  187,  206,  225,  243,  254,  255};
 
 // Instuctions
 int instructionLine = 0;
@@ -54,7 +65,7 @@ int instructionLine = 0;
 //
 // Instrutions for initializing the puzzle
 //
-// Limit to 20 chars         "                    "
+// Limit to 20 chars  "                    "
 const char Init_1[] = "Move All Sliders";
 const char Init_2[] = "Down to Bottom";
 
@@ -69,14 +80,16 @@ const int initLines = 2;
 //
 // Instructions for playing puzzle
 //
-// Limit to 20 chars         "                    "
+// Limit to 20 chars  "                    "
 const char Play_1[] = "Adjust Sliders until";
-const char Play_2[] = "All LEDS are ON";
+const char Play_2[] = "All LEDS are ON.";
+//const char Play_3[] = "  Some + others -";
 
 const char *const Play[] =
 {   
   Play_1,
   Play_2
+//  Play_3
 };
 
 const int playLines = 2;
@@ -86,7 +99,7 @@ const int playLines = 2;
 //
 // Limit to 20 chars  "                    "
 const char Done_1[] = "The Number will the";
-const char Done_2[] = "Value on the Meter";
+const char Done_2[] = "Value on the Meter.";
 
 const char *const Done[] =
 {   
@@ -123,6 +136,48 @@ void flashDisplays () {
   digitalWrite(analogMeterNegPin, LOW);
 }
 
+void displayMeterNumber (int8_t sliderNumber) {
+  int8_t meterNumber = constrain(sliderNumber, -15, 15);
+  int16_t meterValue = Number2PWMValue[meterNumber+15];
+  //int16_t meterValue = (255 * meterNumber)/15;
+  displayMeterValue(meterValue);
+}
+
+void displayMeterValue (int16_t meterValue) {
+
+  switch (meterValue) {
+    case 0:
+      digitalWrite(analogMeterPlusPin, LOW);
+      digitalWrite(analogMeterNegPin, LOW);
+      Serial.println("Full 0");
+      break;
+    case 255:
+      digitalWrite(analogMeterPlusPin, HIGH);
+      digitalWrite(analogMeterNegPin, LOW);
+      Serial.println("Full 15");
+      break;
+    case -255:
+      digitalWrite(analogMeterPlusPin, LOW);
+      digitalWrite(analogMeterNegPin, HIGH);
+      Serial.println("Full -15");
+      break;
+    default:
+      uint8_t pwmPin = analogMeterPlusPin;
+      uint8_t gndPin = analogMeterNegPin;
+      uint8_t pwmValue = abs(meterValue);
+
+      if (meterValue<0) {
+        pwmPin = analogMeterNegPin;
+        gndPin = analogMeterPlusPin;
+      }
+
+      analogWrite(gndPin, 0);
+      digitalWrite(gndPin,LOW);
+      analogWrite(pwmPin, pwmValue);
+      break;
+  }
+}
+
 
 // Check if the puzzle is in a ready state
 // All sliders must be returned to 0
@@ -145,14 +200,53 @@ void performWake() {
 
 }
 
+
+// Perform actions asked to Tune
+void performTune(char command) {
+  uint8_t adjAmount = 1;
+  if (commandArgument[0] != 0) {
+    adjAmount = 0;
+    for (uint8_t c=0; c<strlen(commandArgument); c++) {
+      adjAmount = (adjAmount * 10) + (commandArgument[c] - '0');
+    }
+  }
+  switch (command) {
+    case COMMAND_TUNE:
+      //sendAck(PuzzleName);
+      setPuzzleState(PuzzleStates::Tuning);
+      tuneValue = 0;
+      lastTuneValue = -1;
+      clearCommand();
+      break;
+    case TUNE_COMMAND_UP:
+      tuneValue += adjAmount;
+      if (tuneValue > 255) tuneValue = 255;
+      clearCommand();
+      break;
+    case TUNE_COMMAND_DOWN:
+      tuneValue -= adjAmount;
+      if (tuneValue < -255) tuneValue = -255;
+      clearCommand();
+      break;
+  }
+  if (tuneValue != lastTuneValue) {
+    Serial.print(F("PWM Value: "));
+    Serial.println(tuneValue);
+    displayMeterValue(tuneValue);
+    lastTuneValue = tuneValue;
+  }
+
+}
+
 // Perform actions when a Start command is received
 void performStart(String commandArgument) {
   puzzleInitialized = false;
   setPuzzleState(PuzzleStates::Intialize);
   clearCommand();
 
-  puzzleDifficulty = commandArgument[0];
-  targetNumber = commandArgument.substring(1,2).toInt();
+  puzzleDifficulty = (commandArgument.length() > 0) ? commandArgument[0] : DIFFICULTY_EASY;
+  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1,2).toInt() : targetNumber;
+  targetNumber = constrain(targetNumber, 0, 15);
   Serial.print(F("Difficulty = "));
   Serial.println(puzzleDifficulty);
   Serial.print(F("Target Num = "));
@@ -206,26 +300,15 @@ void performPlaying() {
     slider1LedValue = HIGH;
   }
   
-  // Turn on/off LEDs as appropriate
-  digitalWrite(slider1LedPin, slider1LedValue);
-  digitalWrite(slider2LedPin, slider2LedValue);
-  digitalWrite(slider3LedPin, slider3LedValue);
-
-  int meterNumber = constrain(slider123Number, -15, 15);
-  int meterValue = (255 * abs(meterNumber))/15;
-  uint8_t pwmPin = analogMeterPlusPin;
-  uint8_t gndPin = analogMeterNegPin;
-  if (meterNumber <0) {
-    pwmPin = analogMeterNegPin;
-    gndPin = analogMeterPlusPin;
-  }
-
-  analogWrite(gndPin, 0);
-  digitalWrite(gndPin,LOW);
-  analogWrite(pwmPin, meterValue);
-
-  // Only print if there is a change
+  // Only display and print if there is a change
   if (lastSlider1Number != slider1Number || lastSlider2Number != slider2Number || lastSlider3Number != slider3Number) {
+    // Turn on/off LEDs as appropriate
+    digitalWrite(slider1LedPin, slider1LedValue);
+    digitalWrite(slider2LedPin, slider2LedValue);
+    digitalWrite(slider3LedPin, slider3LedValue);
+
+    displayMeterNumber(slider123Number);
+
     lastSlider1Number = slider1Number;
     lastSlider2Number = slider2Number;
     lastSlider3Number = slider3Number;
@@ -244,10 +327,10 @@ void performPlaying() {
     Serial.print(F("1-2+3: "));
     Serial.print(slider123Number);
     Serial.print(F("; "));
-    Serial.print(F("Meter: "));
-    Serial.print(meterNumber);
-    Serial.print(F(" -> "));
-    Serial.print(meterValue);
+    //Serial.print(F("Meter: "));
+    //Serial.print(meterNumber);
+    //Serial.print(F(" -> "));
+    //Serial.print(meterValue);
     Serial.println();
   }
 
@@ -329,6 +412,14 @@ void loop() {
     case PuzzleStates::Starting:
       if (commandReady && command == COMMAND_WAKE) {
         performWake();
+      }
+      if (commandReady && command == COMMAND_TUNE) {
+        performTune(command);
+      }
+      break;
+    case PuzzleStates::Tuning:
+      if (commandReady) {
+        performTune(command);
       }
       break;
     case PuzzleStates::Ready:
