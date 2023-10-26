@@ -99,6 +99,7 @@ unsigned long lastMillis = 0;
 uint8_t lcdDisplayLine = 0;
 bool puzzleDone = false;
 bool doneInstructions = false;
+bool showNextArrow = false;
 
 //PuzzleDefinition *currentPuzzleDefinition;
 bool commandSent = false;
@@ -106,74 +107,90 @@ unsigned long commandSentAt = 0;
 bool wakeTimeout = false;
 #define TIMEOUT_MILLIS 5000
 
-#define BACKGROUND_COLOR ILI9341_BLACK
-#define PADDING 4
+#define BACKGROUND_COLOR  ILI9341_BLACK
+#define PADDING           4
 
 // Puzzle display grid constants
-#define PUZZLE_TEXT_COLOR ILI9341_BLACK
-#define PUZZLE_WIDTH   100
-#define PUZZLE_HEIGHT  100
-#define PUZZLE_RADIUS  10
-#define PUZZLE_PADDING 5
-#define PUZZLE_TEXT_SIZE 2
+#define PUZZLE_TEXT_COLOR       ILI9341_BLACK
+#define PUZZLE_WIDTH            100
+#define PUZZLE_HEIGHT           100
+#define PUZZLE_RADIUS           10
+#define PUZZLE_PADDING          5
+#define PUZZLE_TEXT_SIZE        2
 #define PUZZLE_TEXT_CHAR_HEIGHT 16
-#define PUZZLE_TEXT_CHAR_WIDTH 12
-#define PUZZLE_OFFSET_X 5
-#define PUZZLE_OFFSET_Y 20
+#define PUZZLE_TEXT_CHAR_WIDTH  12
+#define PUZZLE_OFFSET_X         5
+#define PUZZLE_OFFSET_Y         20
 
 // Difficulty display grid constants
-#define DIFFICULTY_TEXT_COLOR ILI9341_BLACK
-#define DIFFICULTY_WIDTH   100
-#define DIFFICULTY_HEIGHT  200
-#define DIFFICULTY_RADIUS  20
-#define DIFFICULTY_PADDING 5
-#define DIFFICULTY_TEXT_SIZE 2
+#define DIFFICULTY_TEXT_COLOR       ILI9341_BLACK
+#define DIFFICULTY_WIDTH            100
+#define DIFFICULTY_HEIGHT           200
+#define DIFFICULTY_RADIUS           20
+#define DIFFICULTY_PADDING          5
+#define DIFFICULTY_TEXT_SIZE        2
 #define DIFFICULTY_TEXT_CHAR_HEIGHT 16
-#define DIFFICULTY_TEXT_CHAR_WIDTH 12
-#define DIFFICULTY_TEXT_Y (TFT_HEIGHT - WAKE_TEXT_CHAR_HEIGHT)/2
-#define DIFFICULTY_OFFSET_X 5
-#define DIFFICULTY_OFFSET_Y 20
+#define DIFFICULTY_TEXT_CHAR_WIDTH  12
+#define DIFFICULTY_TEXT_Y           (TFT_HEIGHT - DIFFICULTY_TEXT_CHAR_HEIGHT)/2
+#define DIFFICULTY_OFFSET_X         5
+#define DIFFICULTY_OFFSET_Y         20
 
-#define TEXT_SIZE 3
-#define TEXT_CHAR_HEIGHT 24
-#define TEXT_CHAR_WIDTH 18
+#define TEXT_SIZE         3
+#define TEXT_CHAR_HEIGHT  24
+#define TEXT_CHAR_WIDTH   18
 
-#define LINE_COLOR ILI9341_MAGENTA
+#define LINE_COLOR  ILI9341_MAGENTA
 #define LINE_HEIGHT 4
 
-#define NAME_COLOR ILI9341_CYAN
-#define NAME_START_X 0
-#define NAME_START_Y PADDING
+#define NAME_COLOR    ILI9341_CYAN
+#define NAME_START_X  0
+#define NAME_START_Y  PADDING
 
 #define DIFF_START_X 0
 #define DIFF_START_Y NAME_START_Y + TEXT_CHAR_HEIGHT + PADDING
 
-#define TOP_LINE_Y DIFF_START_Y + TEXT_CHAR_HEIGHT + PADDING
-#define TOP_LINE_END_Y TOP_LINE_Y + LINE_HEIGHT
+#define TOP_LINE_Y      DIFF_START_Y + TEXT_CHAR_HEIGHT + PADDING
+#define TOP_LINE_END_Y  TOP_LINE_Y + LINE_HEIGHT
 
-#define TIME_COLOR ILI9341_WHITE
-#define TIME_TEXT_SIZE 9
-#define TIME_CHAR_HEIGHT 72
-#define TIME_CHAR_WIDTH 54
-#define TIME_MIDDLE_Y (TOP_LINE_END_Y + BOT_LINE_Y)/2
-#define TIME_Y TIME_MIDDLE_Y - (TIME_CHAR_HEIGHT/2)
-#define TIME_COLON_X (TFT_WIDTH - TIME_CHAR_WIDTH)/2
-#define TIME_MINUTES_X TFT_WIDTH/2 - (TIME_CHAR_WIDTH*2.5)
-#define TIME_SECONDS_X TFT_WIDTH/2 + (TIME_CHAR_WIDTH/2)
-
-#define STATUS_COLOR ILI9341_ORANGE
-#define STATUS_START_X 0
-#define STATUS_START_Y TFT_HEIGHT - TEXT_CHAR_HEIGHT - PADDING
+#define STATUS_COLOR    ILI9341_ORANGE
+#define STATUS_START_X  0
+#define STATUS_START_Y  TFT_HEIGHT - TEXT_CHAR_HEIGHT - PADDING
 
 #define BOT_LINE_Y STATUS_START_Y - PADDING - LINE_HEIGHT
 
-//char puzzleShortNames[ID_ARRAY_LENGTH][11] ={"", "Control", "2?", "3?", "4?", "5?", "6?"}; 
-//char names[ID_ARRAY_LENGTH][20] = {"", "", "", "", "", "", ""};
-//const char* const fullNames[] = {Controller_Name, Controller_Name, Flip_Name, Slider_Name, Wires_Name, Spin_Name, Phone_Name};
-//const char* const *initInstructions[] = {Select_Difficulty, Select_Difficulty, Flip_Init, Slider_Init, Wires_Init, Spin_Init, Phone_Init};
-//const char* const *playInstructions[] = {Select_Difficulty, Select_Difficulty, Flip_Play, Slider_Play, Wires_Play, Spin_Play, Phone_Play};
+#define TIME_COLOR        ILI9341_WHITE
+#define TIME_TEXT_SIZE    9
+#define TIME_CHAR_HEIGHT  72
+#define TIME_CHAR_WIDTH   54
+#define TIME_MIDDLE_Y     (TOP_LINE_END_Y + BOT_LINE_Y)/2
+#define TIME_Y            TIME_MIDDLE_Y - (TIME_CHAR_HEIGHT/2)
+#define TIME_COLON_X      (TFT_WIDTH - TIME_CHAR_WIDTH)/2
+#define TIME_MINUTES_X    TFT_WIDTH/2 - (TIME_CHAR_WIDTH*2.5)
+#define TIME_SECONDS_X    TFT_WIDTH/2 + (TIME_CHAR_WIDTH/2)
+
+#define NEXT_COLOR            ILI9341_PINK
+#define NEXT_CIRCLE_X         TFT_WIDTH/2
+#define NEXT_CIRCLE_Y         TIME_MIDDLE_Y
+//#define NEXT_CIRCLE_RADIUS  (BOT_LINE_Y - TOP_LINE_END_Y)/2 - (PADDING*4)
+#define NEXT_CIRCLE_RADIUS    60
+#define NEXT_TRIANGLE_LEFT_X  (TFT_WIDTH/2) - 35
+#define NEXT_TRIANGLE_TOP_Y   TIME_MIDDLE_Y - 45
+#define NEXT_TRIANGLE_BOT_Y   TIME_MIDDLE_Y + 45
+#define NEXT_TRIANGLE_RIGHT_X (TFT_WIDTH/2) + NEXT_CIRCLE_RADIUS - PADDING
+#define NEXT_TRIANGLE_RIGHT_Y TIME_MIDDLE_Y
+#define NEXT_TEXT_COLOR       ILI9341_BLACK
+#define NEXT_TEXT_SIZE        3
+#define NEXT_TEXT_CHAR_HEIGHT 24
+#define NEXT_TEXT_CHAR_WIDTH  18
+#define NEXT_TEXT_LENGTH      4
+#define NEXT_TEXT_Y           TIME_MIDDLE_Y - (NEXT_TEXT_CHAR_HEIGHT / 2)+3
+#define NEXT_TEXT_X           NEXT_TRIANGLE_LEFT_X + 3
 
 
+
+/*
+ * Print a set of 4 lines from PROGMEM to the LCD display
+ */
 void printLCD(const char *const lines[]) {
   char lineBuffer[21];
   lcd.clear();
@@ -182,38 +199,6 @@ void printLCD(const char *const lines[]) {
     lcd.setCursor(0, lineNum);
     lcd.print(lineBuffer);
   }
-}
-
-
-void setupPlayFTF() {
-  tft.fillScreen(BACKGROUND_COLOR);
-
-  uint16_t textWidth = strlen(difficultyDisplayNames[difficulty]) * TEXT_CHAR_WIDTH;
-  tft.setTextSize(TEXT_SIZE);
-  tft.setCursor((TFT_WIDTH-textWidth)/2, DIFF_START_Y);
-  tft.setTextColor(difficlutyDisplayColors[difficulty]);
-  tft.print(difficultyDisplayNames[difficulty]);
-
-  tft.fillRect(NAME_START_X, TOP_LINE_Y, TFT_WIDTH, LINE_HEIGHT, LINE_COLOR);
-  //tft.drawFastHLine(0, STATUS_LINE_Y-5, TFT_WIDTH, LINE_COLOR);
-  tft.fillRect(STATUS_START_X, BOT_LINE_Y, TFT_WIDTH, LINE_HEIGHT, LINE_COLOR);
-
-  tft.setTextSize(TIME_TEXT_SIZE);
-  tft.setTextColor(TIME_COLOR);
-  //uint16_t textX, textY, textWidth, textHeight;
-  //tft.getTextBounds("00", 0, 20, &textX, &textY, &textWidth, &textHeight);
-  //Serial.print("00  textWidth=");
-  //Serial.println(textWidth);
-  //Serial.print("00 textHeight=");
-  //Serial.println(textHeight);
-  //tft.getTextBounds("00:00", 0, 20, &textX, &textY, &textWidth, &textHeight);
-  //Serial.print("00:00  textWidth=");
-  //Serial.println(textWidth);
-  //Serial.print("00:00 textHeight=");
-  //Serial.println(textHeight);
-  tft.setCursor(TIME_COLON_X, TIME_Y);
-  tft.print(":");
-
 }
 
 
@@ -235,6 +220,21 @@ void printPuzzleStatusTFT(const char*  statusText) {
   tft.print(statusText);
 }
 
+void printColonTFT() {
+  tft.setTextSize(TIME_TEXT_SIZE);
+  tft.setTextColor(TIME_COLOR);
+  tft.setCursor(TIME_COLON_X, TIME_Y);
+  tft.print(":");
+}
+
+void printNextArrow() {
+  tft.drawCircle(NEXT_CIRCLE_X, NEXT_CIRCLE_Y, NEXT_CIRCLE_RADIUS, NEXT_COLOR);
+  tft.fillTriangle(NEXT_TRIANGLE_LEFT_X, NEXT_TRIANGLE_TOP_Y, NEXT_TRIANGLE_LEFT_X, NEXT_TRIANGLE_BOT_Y, NEXT_TRIANGLE_RIGHT_X, NEXT_TRIANGLE_RIGHT_Y, NEXT_COLOR);
+  tft.setTextColor(NEXT_TEXT_COLOR);
+  tft.setTextSize(NEXT_TEXT_SIZE);
+  tft.setCursor(NEXT_TEXT_X, NEXT_TEXT_Y);
+  tft.print(F("NEXT"));
+}
 
 void printMinutesTFT() {
   tft.fillRect(TIME_MINUTES_X, TIME_Y, TIME_CHAR_WIDTH*2, TIME_CHAR_HEIGHT, BACKGROUND_COLOR);
@@ -245,6 +245,10 @@ void printMinutesTFT() {
     tft.print("0");
   }
   tft.print(elapsedMinutes);
+  tft.flush();
+  if (showNextArrow) {
+    printNextArrow();
+  }
 }
 
 
@@ -257,6 +261,10 @@ void printSecondsTFT() {
     tft.print("0");
   }
   tft.print(elapsedSeconds);
+  tft.flush();
+  if (showNextArrow) {
+    printNextArrow();
+  }
 }
 
 
@@ -269,6 +277,39 @@ bool addSecond() {
   }
   printSecondsTFT();
   return (elapsedMinutes >= MAX_MINUTES);
+}
+
+
+void showTime() {
+  showNextArrow = false;
+  tft.fillRect(0, NEXT_CIRCLE_Y-NEXT_CIRCLE_RADIUS-1, TFT_WIDTH, (NEXT_CIRCLE_RADIUS*2)+2, BACKGROUND_COLOR);
+  printColonTFT();
+  printSecondsTFT();
+  printMinutesTFT();
+  Serial.println("Show Time");
+}
+
+void showNext() {
+  showNextArrow = true;
+  printNextArrow();
+  Serial.println("Show Arrow");
+}
+
+
+void showPlayFTF() {
+  tft.fillScreen(BACKGROUND_COLOR);
+
+  uint16_t textWidth = strlen(difficultyDisplayNames[difficulty]) * TEXT_CHAR_WIDTH;
+  tft.setTextSize(TEXT_SIZE);
+  tft.setCursor((TFT_WIDTH-textWidth)/2, DIFF_START_Y);
+  tft.setTextColor(difficlutyDisplayColors[difficulty]);
+  tft.print(difficultyDisplayNames[difficulty]);
+
+  tft.fillRect(NAME_START_X, TOP_LINE_Y, TFT_WIDTH, LINE_HEIGHT, LINE_COLOR);
+  //tft.drawFastHLine(0, STATUS_LINE_Y-5, TFT_WIDTH, LINE_COLOR);
+  tft.fillRect(STATUS_START_X, BOT_LINE_Y, TFT_WIDTH, LINE_HEIGHT, LINE_COLOR);
+
+  showTime();
 }
 
 void playMusic(int speakerPin, Note music[]) {
@@ -467,16 +508,6 @@ void transitionToReadyState() {
   drawPuzzleDifficulty();
 
   printLCD(Select_Difficulty);   // Ask to select Difficulty
-  //printLCD(Controller_Definition.init);   // Ask to select Difficulty
-  //lcd.clear();
-  //lcd.setCursor(0,0);
-  //lcd.print(F("Please select a"));
-  //lcd.setCursor(0,1);
-  //lcd.print(F("Difficulty Level"));
-  //lcd.setCursor(0,2);
-  //lcd.print(F("to start the game"));
-  //lcd.setCursor(0,3);
-  //lcd.print(F("..."));
 
 }
 
@@ -516,7 +547,6 @@ void transitionToPlayingState() {
   setControllerState(ControllerStates::Playing);
 
   //tft.fillScreen(BACKGROUND_COLOR);
-  setupPlayFTF();
 
   currentPuzzle = 0;
   currentPuzzleID = puzzlePlayOrder[currentPuzzle];
@@ -527,8 +557,7 @@ void transitionToPlayingState() {
   elapsedMinutes = 0;
   elapsedSeconds = 0;
   lastMillis = millis();
-  printMinutesTFT();
-  printSecondsTFT();
+  showPlayFTF();
 }
 
 
@@ -576,13 +605,14 @@ void performPlaying() {
           break;
         case COMMAND_DONE:
           puzzleDone = true;
-          if (commandArgument[0] == 'Y') {
-            doneInstructions = true;
+          doneInstructions = (commandArgument[0] == 'Y');
+          if (doneInstructions) {
             printPuzzleStatusTFT(To_Done);
             lcdDisplayLine = 0;
             lcd.clear();
             lcd.setCursor(0,3);
             lcd.print(F("Tap Screen for Next"));
+            showNext();
           }
           clearCommand();
           if (doneInstructions) {
@@ -603,6 +633,9 @@ void performPlaying() {
       currentPuzzleID = puzzlePlayOrder[currentPuzzle];
       //currentPuzzleDefinition = Puzzle_Definitions[currentPuzzleID];
       commandSent = false;
+      if (doneInstructions) {
+        showTime();
+      }
     }
 
   }
