@@ -17,7 +17,8 @@
 
 // Puzzle definitions
 const int   PuzzleId  = PHONE_ID;
-const char* PuzzleName = "Dial Number";
+const char* PuzzleShortName = "Phone";
+const char* PuzzleLongtName = "Phone Home";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
 
@@ -66,11 +67,56 @@ bool showSwitchState = true;
 SoftwareSerial dfPlayerSerial(dfPlayerRxPin, dfPlayerTxPin); // RX, TX
 DFRobotDFPlayerMini dfPlayer;
 
-#define DFPLAYER_VOLUME 24
-#define DIALTONE_MP3  1
-#define RINGING_MP3   2
+#define DFPLAYER_VOLUME 22
+#define DIALTONE_FOLDER      1
+#define RINGING_FOLDER       2
+#define OFFHOOK_FOLDER       3
+#define WRONG_NUMBER_FOLDER  4
+#define DIALTONE_MP3         DIALTONE_FOLDER
+#define RINGING_MP3          RINGING_FOLDER
+#define WRONG_NUMBER_MP3     WRONG_NUMBER_FOLDER
 
-void printDetail(uint8_t type, int value){
+// Instuctions
+int instructionLine = 0;
+
+//
+// Instrutions for initializing the puzzle
+//
+// Limit to 20 chars  "                    "
+const char Init_1[] = "Take Phone offline";
+const char Init_2[] = "by lifting the";
+const char Init_3[] = "Knife Switch";
+
+const char *const Init[] =
+{   
+  Init_1,
+  Init_2,
+  Init_3
+};
+
+const int initLines = 3;
+
+//
+// Instructions for playing puzzle
+//
+// Limit to 20 chars  "                    "
+const char Play_1[] = "Connect/Reset Phone";
+const char Play_2[] = "using Knife Switch.";
+const char Play_3[] = "Dial 7 digit number";
+const char Play_4[] = "from other puzzles.";
+
+const char *const Play[] =
+{   
+  Play_1,
+  Play_2,
+  Play_3,
+  Play_4
+};
+
+const int playLines = 4;
+
+
+void printDFPlayerStatus(uint8_t type, int value){
   switch (type) {
     case TimeOut:
       Serial.println(F("Time Out!"));
@@ -138,8 +184,8 @@ void printDetail(uint8_t type, int value){
 void flashDisplays () {
   Serial.println(F("Flashing Displays"));
   // Turn on Lights and other indicators
-  dfPlayer.play(DIALTONE_MP3);  //Play the Dialtone mp3
-  delay(1000);
+  dfPlayer.playFolder(DIALTONE_FOLDER, DIALTONE_MP3);  //Play the Dialtone mp3
+  delay(FLASH_DISPLAYS_DURATION);
   // Turn off Lights and other indicators
   dfPlayer.stop();
 }
@@ -158,7 +204,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleName);
+  sendAck(PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -172,7 +218,7 @@ void performStart(String commandArgument) {
 
   puzzleDifficulty = (commandArgument.length() > 0) ? commandArgument[0] : DIFFICULTY_EASY;
 
-  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1) : "7950163";
+  targetNumber = (commandArgument.length() > 1) ? commandArgument.substring(1) : targetNumber;
 }
 
 // Perform the Initialization steps including any randomizations
@@ -182,17 +228,30 @@ void performInitialize() {
   if (!puzzleInitialized) {
     puzzleInitialized = true;
 
+    // Same for all Difficulties
+//    switch (puzzleDifficulty) {
+//      case DIFFICULTY_EASY:
+//      case DIFFICULTY_MEDIUM:
+//      case DIFFICULTY_HARD:
+//      default:
+//        break;
+//    }
+
     if (!puzzleReady()) {
+      dfPlayer.loopFolder(OFFHOOK_FOLDER);
       // Need to let Command know we will be in this state for a while
-      sendInitialize();
+      sendInitialize(PuzzleLongtName);
+      instructionLine = 0;
     }
   }
 
   // Wait until the puzzle has been reset by player
   if (puzzleReady()) {
     // Good to go - Let's play
+    dfPlayer.stop();
     // Inform Command we are playing
-    sendPlay();
+    sendPlay(PuzzleLongtName);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Playing);
     
     // Ensure the dialed phone number is empty
@@ -237,6 +296,7 @@ void performPlaying() {
     zeroNumberDialed();
     currentDigit = 0;
     pulseCount = 0;
+    dfPlayer.stop();
   }
 
   switch (currentState) {
@@ -245,7 +305,7 @@ void performPlaying() {
       if (onlineSwitch.fell()) {
         Serial.println(F("Placed Online - Knife Switch Closed"));
         setState(DialerStates::Online);
-        dfPlayer.loop(DIALTONE_MP3);
+        dfPlayer.loopFolder(DIALTONE_FOLDER);
       }
       break;
 
@@ -292,22 +352,25 @@ void performPlaying() {
       // Play a ringing sound
 
       // Delay for a bit to allow for ringing effect
-      dfPlayer.play(RINGING_MP3);
-      delay(4000);
+      dfPlayer.playFolder(RINGING_FOLDER, RINGING_MP3);
+      delay(8000);
+      dfPlayer.stop();
 
       // Play a sound file of someone answering
+
+      setState(DialerStates::Connected);
+      puzzleSolved = true;
+      break;
+
+    case Invalid:
+      // Play a wrong number sound
+      dfPlayer.playFolder(WRONG_NUMBER_FOLDER, WRONG_NUMBER_MP3);
 
       setState(DialerStates::Connected);
       break;
 
     case Connected:
       // Nothing to do in this state, but wait to go offline via Knife Switch
-      puzzleSolved = true;
-      break;
-
-    case Invalid:
-      // Nothing to do in this state, but wait to go offline via Knife Switch
-      // Could add a step before this to play the invalid number response
       break;
 
     default:
@@ -316,7 +379,8 @@ void performPlaying() {
 
   if (puzzleSolved) {
     // Inform Command the puzzle has been solved
-    sendSolved();
+    sendSolved(false);
+    instructionLine = 0;
     setPuzzleState(PuzzleStates::Solved);
   }
 }
@@ -330,7 +394,7 @@ void setup() {
   Serial.print(F("Puzzle   ID: "));
   Serial.println(PuzzleId);
   Serial.print(F("Puzzle Name: "));
-  Serial.println(PuzzleName);
+  Serial.println(PuzzleShortName);
 
   // Set up the input pins and attach debounce
   pinMode(onlinePin, INPUT_PULLUP);
@@ -354,7 +418,7 @@ void setup() {
     Serial.println(F("1.Please recheck the connection!"));
     Serial.println(F("2.Please insert the SD card!"));
     if (dfPlayer.available()) {
-      printDetail(dfPlayer.readType(), dfPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
+      printDFPlayerStatus(dfPlayer.readType(), dfPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
     }
     delay(1000);
   }
@@ -386,7 +450,13 @@ void loop() {
       }
       break;
     case PuzzleStates::Intialize:
-      performInitialize();
+       if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < initLines) {
+          sendLine(Init[instructionLine++]);
+        }
+        clearCommand();
+      }
+     performInitialize();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_PLAY) {
         setPuzzleState(PuzzleStates::Playing);
@@ -394,6 +464,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Playing:
+      if (commandReady && command == COMMAND_NEXT) {
+        if (instructionLine < playLines) {
+          sendLine(Play[instructionLine++]);
+        }
+        clearCommand();
+      }
       performPlaying();
       // The following if should be removed - it is only here for testing
       if (commandReady && command == COMMAND_DONE) {
@@ -402,9 +478,12 @@ void loop() {
       }
       break;
     case PuzzleStates::Solved:
-      if (commandReady && command == COMMAND_WAKE) {
-        performWake();
-      }
+//      if (commandReady && command == COMMAND_NEXT) {
+//        if (instructionLine < doneLines) {
+//          sendLine(Done[instructionLine++]);
+//        }
+//        clearCommand();
+//      }
       break;
     default:
       Serial.print(F("Invalid State: "));
@@ -412,15 +491,20 @@ void loop() {
       break;
   }
   if (commandReady) {
-    Serial.print(F("Command '"));
-    Serial.print(command);
-    Serial.print(F("' "));
-    if (commandArgument.length() > 0) {
-      Serial.print(F("with args "));
-      Serial.print(commandArgument);
+    if (commandReady && command == COMMAND_WAKE) {
+      performWake();
     }
-    Serial.print(F(" was not processed in state: "));
-    Serial.println(puzzleStatesString[puzzleState]);
+    else {
+      Serial.print(F("Command '"));
+      Serial.print(command);
+      Serial.print(F("' "));
+      if (commandArgument[0] != 0) {
+        Serial.print(F("with args "));
+        Serial.print(commandArgument);
+      }
+      Serial.print(F(" was not processed in state: "));
+      Serial.println(puzzleStatesString[puzzleState]);
+    }
     clearCommand();
   }
 }
