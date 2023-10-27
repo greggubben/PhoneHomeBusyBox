@@ -19,6 +19,8 @@ const char* PuzzleShortName = "Spin";
 const char* PuzzleLongName = "Spin to Win";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
+#define MAX_NUMBER_LENGTH 3
+
 
 // Target number
 int targetNumber = 163;
@@ -202,7 +204,7 @@ void displayDigitsAway(int current[3], int target[3]) {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleShortName);
+  sendAck(MAX_NUMBER_LENGTH, PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -274,6 +276,9 @@ void performInitialize() {
 
     lastDialValue = 0x1000;
 
+  // Digit difficulty is handled by controller
+  // No need to do anything extra
+/*
     switch (puzzleDifficulty) {
       case DIFFICULTY_EASY:
       case DIFFICULTY_MEDIUM:
@@ -295,7 +300,7 @@ void performInitialize() {
         //Serial.println(F(" Done"));
         break;
     }
-
+*/
     if (!puzzleReady()) {
       // Need to let Command know we will be in this state for a while
       sendInitialize(PuzzleLongName);

@@ -24,6 +24,7 @@ const char* PuzzleShortName = "Slider";
 const char* PuzzleLongName = "Slide into Home";
 bool puzzleInitialized = false;
 char puzzleDifficulty = " ";
+#define MAX_NUMBER_LENGTH 1
 
 
 // Tuning Commands
@@ -194,7 +195,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleShortName);
+  sendAck(MAX_NUMBER_LENGTH, PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -349,7 +350,8 @@ void performPlaying() {
         puzzleSolved = (slider1Number != slider2Number && slider2Number != slider3Number && slider1Number != slider3Number);
         break;
       case DIFFICULTY_HARD:
-        puzzleSolved = (slider1Number > slider2Number && slider2Number > slider3Number);
+        // Must be 2 away
+        puzzleSolved = (abs(slider1Number - slider2Number) > 1 && abs(slider2Number - slider3Number) > 1 && abs(slider1Number - slider3Number) > 1);
         break;
     }
   }

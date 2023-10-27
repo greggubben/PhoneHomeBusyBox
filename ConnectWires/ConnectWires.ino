@@ -14,6 +14,7 @@ const char* PuzzleShortName = "Wires";
 const char* PuzzleLongName = "Hook Me Up";
 bool puzzleInitialized = false;
 char puzzleDifficulty = " ";
+#define MAX_NUMBER_LENGTH 1
 
 
 // Pin definitions
@@ -44,7 +45,7 @@ const int initLines = 1;
 //
 // Instructions for playing puzzle
 //
-// Limit to 20 chars          "                    "
+// Limit to 20 chars  "                    "
 const char Play_1[] = "Connect Wires across";
 const char Play_2[] = "Top & Bottom rows";
 const char Play_3[] = "Turn On Lights Off";
@@ -115,7 +116,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleShortName);
+  sendAck(MAX_NUMBER_LENGTH, PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 

@@ -73,11 +73,12 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
   command = payload[0];
   commandArgument[0] = 0;
   if (length > 1) {
-    uint8_t argLen = 0;
-    for (uint8_t c=1; c<length && c<MAX_PJON_COMMAND_LENGTH-1; c++) {
-      commandArgument[argLen++] = payload[c];
-    }
-    commandArgument[argLen] = 0;
+    strncpy(commandArgument, &payload[1], length-1);
+    //uint8_t argLen = 0;
+    //for (uint8_t c=1; c<length && c<MAX_PJON_COMMAND_LENGTH-1; c++) {
+    //  commandArgument[argLen++] = payload[c];
+    //}
+    commandArgument[length-1] = 0;
   }
   commandReady = true;
 
@@ -226,9 +227,11 @@ void sendWake(int puzzleID) {
 }
 
 // Send an Acknowledgement to Control
-void sendAck(char* argument) {
+void sendAck(byte numLen, char* shortName) {
   //Serial.println(F("Send ACK to Control"));
-  //char commandString[MAX_PJON_COMMAND_LENGTH];
+  char argument[MAX_PJON_COMMAND_LENGTH];
+  argument[0] = (numLen == 'A') ? 'A' : '0' + numLen;
+  strcpy(&argument[1], shortName);
   //Serial.println(MAX_PJON_COMMAND_LENGTH);
   //uint8_t commandLength = 0;
   //commandString[commandLength++] = COMMAND_ACK;

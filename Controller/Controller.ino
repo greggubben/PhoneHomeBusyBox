@@ -83,16 +83,23 @@ const uint16_t wakeStateColors[] = {ILI9341_WHITE, ILI9341_YELLOW, ILI9341_GREEN
 WakeStates puzzleWakeStatus[ID_ARRAY_LENGTH];
 
 // Game Order
-const static uint8_t puzzlePlayOrder[] = {SLIDER_ID, WIRES_ID, FLIPBITS_ID, SPINDIGIT_ID, PHONE_ID};
-//const String puzzlePlayNames[] = {"Slider", "Wires", "Flip", "Spin", "Phone"};
-const char* puzzlePlayValues[] = {"7", "9", "50", "163", "7950163"};  // Hack - upgrade to parsing logic
 #define PUZZLE_PLAY_LENGTH 5
+#define TARGET_NUMBER_LENGTH 7
+#define MAX_TARGET_NUMBERS 3
+const  uint8_t defaultPlayOrder[PUZZLE_PLAY_LENGTH] = {SLIDER_ID, WIRES_ID, FLIPBITS_ID, SPINDIGIT_ID, PHONE_ID};
+uint8_t puzzlePlayOrder[PUZZLE_PLAY_LENGTH];
+const char* targetPuzzleNumbers[MAX_TARGET_NUMBERS] = {"7950163", "7955769", "8675309"};
+uint8_t targetNumberPos = 0;
+const uint8_t difficultyPuzzleChoice[DIFFCULTY_DISPLAY_LENGTH] = {1, 2, MAX_TARGET_NUMBERS};
+char randomPuzzleNumber[TARGET_NUMBER_LENGTH+1];
+uint8_t nextNumberPosition = 0;
+byte puzzleNumberSize[ID_ARRAY_LENGTH] = {0, 0, 0, 0, 0, 0, 0};   // Based on ID numbers
 
 //const char* targetNumber = "7950163";
 uint8_t currentPuzzle = 0;
 uint8_t currentPuzzleID = 0;
 //char currentPuzzleShortName[10] = "";
-char currentPuzzleLongName[21] = "";
+//char currentPuzzleLongName[21] = "";
 uint8_t elapsedMinutes = 0;
 uint8_t elapsedSeconds = 0;
 unsigned long lastMillis = 0;
@@ -286,13 +293,11 @@ void showTime() {
   printColonTFT();
   printSecondsTFT();
   printMinutesTFT();
-  Serial.println("Show Time");
 }
 
 void showNext() {
   showNextArrow = true;
   printNextArrow();
-  Serial.println("Show Arrow");
 }
 
 
@@ -431,12 +436,13 @@ void performWake() {
   }
   else {
     if (commandReady && command == COMMAND_ACK) {
-      Serial.print(F("ACK Received from "));
-      Serial.println(commandArgument);
+      //Serial.print(F("ACK Received from "));
+      //Serial.println(commandArgument);
       puzzleWakeStatus[currentPuzzleID] = WakeStates::Awake;
       //strncpy(puzzleShortNames[puzzleDisplayOrder[currentPuzzleID]], commandArgument, 11);
       //puzzleShortNames[currentPuzzle][9] = 0;
-      drawWakeStatus(currentPuzzle, commandArgument);
+      puzzleNumberSize[currentPuzzleID] = (commandArgument[0] == 'A') ? 'A' : commandArgument[0] - '0';
+      drawWakeStatus(currentPuzzle, &commandArgument[1]);
 
       // Move on to Next puzzle
       next = true;
@@ -546,12 +552,46 @@ void performReady() {
 void transitionToPlayingState() {
   setControllerState(ControllerStates::Playing);
 
-  //tft.fillScreen(BACKGROUND_COLOR);
+  // Setup the Target number
+  targetNumberPos = rand() % difficultyPuzzleChoice[difficulty];
+  nextNumberPosition = 0;
+  // Copy the number over as is
+  strncpy(randomPuzzleNumber, targetPuzzleNumbers[targetNumberPos], TARGET_NUMBER_LENGTH);
+  randomPuzzleNumber[TARGET_NUMBER_LENGTH] = 0;
+
+  // Copy the puzzle play order as is
+  for (uint8_t p=0; p<PUZZLE_PLAY_LENGTH; p++) {
+    puzzlePlayOrder[p] = defaultPlayOrder[p];
+  }
+  switch (puzzleDifficulty) {
+    case DIFFICULTY_HARD:
+      // randomize the digits
+      for (uint8_t n=0; n<TARGET_NUMBER_LENGTH; n++) {
+        uint8_t r = rand() % TARGET_NUMBER_LENGTH;
+       char parkedChar = randomPuzzleNumber[n];
+       randomPuzzleNumber[n] = randomPuzzleNumber[r];
+       randomPuzzleNumber[r] = parkedChar;
+      }
+
+    case DIFFICULTY_MEDIUM:
+      // randomize the play order - skipping the last (phone dialer)
+      for (uint8_t p=0; p<PUZZLE_PLAY_LENGTH-1; p++) {
+        uint8_t r = rand() % (PUZZLE_PLAY_LENGTH-1);
+        uint8_t parkedNum = puzzlePlayOrder[p];
+        puzzlePlayOrder[p] = puzzlePlayOrder[r];
+        puzzlePlayOrder[r] = parkedNum;
+      }
+
+    default:
+    case DIFFICULTY_EASY:
+      break;
+  }
+  randomPuzzleNumber[TARGET_NUMBER_LENGTH] = 0;
 
   currentPuzzle = 0;
   currentPuzzleID = puzzlePlayOrder[currentPuzzle];
-  currentPuzzleLongName[0] = 0;
-  //currentPuzzleDefinition = Puzzle_Definitions[currentPuzzleID];
+  //currentPuzzleLongName[0] = 0;
+
   commandSent = false;
 
   elapsedMinutes = 0;
@@ -564,7 +604,9 @@ void transitionToPlayingState() {
 void performPlaying() {
 
   if (puzzleWakeStatus[currentPuzzleID] != WakeStates::Awake) {
-    Serial.println(F("Skipping Puzzle - not awake"));
+    Serial.print(F("Skipping Puzzle "));
+    Serial.print(currentPuzzleID);
+    Serial.println(F(" - not awake"));
     currentPuzzle++;
     currentPuzzleID = puzzlePlayOrder[currentPuzzle];
     //currentPuzzleDefinition = Puzzle_Definitions[currentPuzzleID];
@@ -572,9 +614,24 @@ void performPlaying() {
 
   else if (!commandSent) {
     printPuzzleNameTFT("");
-    //Serial.println((__FlashStringHelper *) fullNames[currentPuzzleID]);
 
-    sendStart(currentPuzzleID, puzzleDifficulty, puzzlePlayValues[currentPuzzle], strlen(puzzlePlayValues[currentPuzzle]));
+    char numbersToSend[TARGET_NUMBER_LENGTH+1];
+    uint8_t numbersSize = puzzleNumberSize[currentPuzzleID];
+    if (numbersSize == 'A') {
+      numbersSize = TARGET_NUMBER_LENGTH;
+      strncpy(numbersToSend, targetPuzzleNumbers[targetNumberPos], numbersSize);
+    }
+    else {
+      for (int c=0; c<numbersSize; c++) {
+        numbersToSend[c] = randomPuzzleNumber[nextNumberPosition++];
+      }
+    }
+    numbersToSend[numbersSize] = 0;
+    //Serial.print(F("numbersToSend = "));
+    //Serial.println(numbersToSend);
+    //Serial.print(F("numbersSize = "));
+    //Serial.println(numbersSize);
+    sendStart(currentPuzzleID, puzzleDifficulty, numbersToSend, numbersSize);
     commandSent = true;
     puzzleDone = false;
     //lcd.clear();
@@ -586,8 +643,8 @@ void performPlaying() {
     if (commandReady) {
       switch (command) {
         case COMMAND_INIT:
-          strncpy(currentPuzzleLongName, commandArgument, 21);
-          printPuzzleNameTFT(currentPuzzleLongName);
+          //strncpy(currentPuzzleLongName, commandArgument, 21);
+          printPuzzleNameTFT(commandArgument);
           printPuzzleStatusTFT(To_Init);
           lcdDisplayLine = 0;
           lcd.clear();
@@ -595,8 +652,8 @@ void performPlaying() {
           sendNext(currentPuzzleID);
           break;
         case COMMAND_PLAY:
-          strncpy(currentPuzzleLongName, commandArgument, 21);
-          printPuzzleNameTFT(currentPuzzleLongName);
+          //strncpy(currentPuzzleLongName, commandArgument, 21);
+          printPuzzleNameTFT(commandArgument);
           printPuzzleStatusTFT(To_Play);
           lcdDisplayLine = 0;
           lcd.clear();
@@ -660,7 +717,7 @@ void transitionToSolvedState() {
   // Play the entertainer
   setControllerState(ControllerStates::Solved);
 
-  printPuzzleStatusTFT("");
+  printPuzzleStatusTFT(To_Win);
   printLCD(Winner);
 
   playMusic(SPEAKER_PIN, entertainer);
@@ -673,7 +730,7 @@ void outOfTime() {
   // Play the entertainer
   setControllerState(ControllerStates::Solved);
 
-  printPuzzleStatusTFT("");
+  printPuzzleStatusTFT(To_Time);
   printLCD(OutOfTime);
 }
 

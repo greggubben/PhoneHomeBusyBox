@@ -8,6 +8,8 @@
 const char To_Init[] = "Initialize Puzzle";
 const char To_Play[] = "Play Puzzle";
 const char To_Done[] = "Determine Number";
+const char To_Win[]  = "Winner!";
+const char To_Time[] = "Time is Up!";
 const char Blank_Line[] PROGMEM = "";
 
 

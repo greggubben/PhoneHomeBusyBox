@@ -21,6 +21,8 @@ const char* PuzzleShortName = "Phone";
 const char* PuzzleLongtName = "Phone Home";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
+#define MAX_NUMBER_LENGTH 'A'           // A for all
+
 
 // Target Number
 String targetNumber = "7950163";
@@ -204,7 +206,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleShortName);
+  sendAck(MAX_NUMBER_LENGTH, PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -256,6 +258,8 @@ void performInitialize() {
     
     // Ensure the dialed phone number is empty
     zeroNumberDialed();
+    currentDigit = 0;
+    pulseCount = 0;
     showSwitchState = true; // First time through show the switch state
     setState(DialerStates::Idle);
   }
@@ -292,10 +296,10 @@ void performPlaying() {
   // Taken offline. This overrides all other activity
   if (onlineSwitch.rose()) {
     Serial.println(F("Taken Offline - Knife Switch Opened"));
-    setState(DialerStates::Idle);
     zeroNumberDialed();
     currentDigit = 0;
     pulseCount = 0;
+    setState(DialerStates::Idle);
     dfPlayer.stop();
   }
 
@@ -304,6 +308,9 @@ void performPlaying() {
     case Idle:
       if (onlineSwitch.fell()) {
         Serial.println(F("Placed Online - Knife Switch Closed"));
+        zeroNumberDialed();
+        currentDigit = 0;
+        pulseCount = 0;
         setState(DialerStates::Online);
         dfPlayer.loopFolder(DIALTONE_FOLDER);
       }

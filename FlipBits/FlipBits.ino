@@ -20,6 +20,8 @@ const char* PuzzleShortName = "Flip";
 const char* PuzzleLongName = "Flip the Bits";
 bool puzzleInitialized = false;
 char puzzleDifficulty = DIFFICULTY_EASY;
+#define MAX_NUMBER_LENGTH 2
+
 
 // Target number
 int targetNumber = 50;
@@ -205,7 +207,7 @@ bool puzzleReady() {
 // Perform actions when a Wake command is received
 void performWake() {
   flashDisplays();
-  sendAck(PuzzleShortName);
+  sendAck(MAX_NUMBER_LENGTH, PuzzleShortName);
   setPuzzleState(PuzzleStates::Ready);
   clearCommand();
 
@@ -228,6 +230,7 @@ void performInitialize() {
   // Perform first time tasks such as randomization of drivers
   if (!puzzleInitialized) {
     puzzleInitialized = true;
+    int remainingPins[8];
 
     switch (puzzleDifficulty) {
       case DIFFICULTY_EASY:
@@ -237,10 +240,21 @@ void performInitialize() {
           bounceToggles[p].attach(togglePins[p]);                         // This also resets the debouncer
         }
         break;
-      case DIFFICULTY_HARD:
       case DIFFICULTY_MEDIUM:
-        Serial.print(F("Randomize Toggle Switches "));
-        int remainingPins[8];
+        // Randomize within each Nibble - Low with Low and High within High
+        for (uint8_t nibble=0; nibble<8; nibble+=4) {
+          for (int p=0; p<4;p++) {remainingPins[p] = togglePins[nibble+p];}        // Create shrinking array
+          for (int t=0; t<4; t++) {
+            Serial.print(F("."));
+            int pinsLeftToAssign = 3 - t;
+            int randomToggle =  random(pinsLeftToAssign);
+            bounceToggles[nibble+t].attach(remainingPins[randomToggle]);           // This also resets the debouncer
+            remainingPins[randomToggle] = remainingPins[pinsLeftToAssign];  // Move last element to one just used
+          }
+        }
+        break;
+      case DIFFICULTY_HARD:
+        // Randomize all toggles Low Nibble mixed with High Nibble
         for (int p=0; p<8;p++) {remainingPins[p] = togglePins[p];}        // Create shrinking array
         for (int t=0; t<8; t++) {
           Serial.print(F("."));
