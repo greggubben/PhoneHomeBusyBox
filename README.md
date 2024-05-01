@@ -16,8 +16,8 @@ The Phone Home Busy Box Briefcase layout looks like this:
 ![Picture of the Phone Home Busy Box Briefcase with all the Modules installed](images/Briefcase_Modules.jpg)
 
 
-| 1 | 2 | 3 |   |
-| :---: | :---: | :---: | :---: |
-| **Slide into Home** | **Control Module** | **Flip the Bits** | Cable |
-| **Hook me Up** | **Dialer** | **Spin Digit** | Power |
+|  Col<br>\<br>Row | 1 | 2 | 3 |   |
+| :---: | :---: | :---: | :---: | :---: |
+| 1 | **Slide into Home** | **Control Module** | **Flip the Bits** | Cable |
+| 2 | **Hook me Up** | **Dialer** | **Spin Digit** | Power |
 
