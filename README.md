@@ -118,7 +118,6 @@ stateDiagram-v2
   needsInitialized --> Initialize: Puzzle needs to be Initialized
   needsInitialized --> Playing: Puzzle is ready to Play
   Initialize --> Playing: Puzzle Initialized
-  Ready --> Playing: Puzzle is ready to Play
   Playing --> Done: Puzzle is Solved
   Done --> Ready: Control Wakes Up Puzzle for another game
 
