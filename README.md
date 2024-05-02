@@ -150,7 +150,7 @@ When the briefcase is powered up, the **Control Module** pings each puzzle modul
 | Hard | Selected from several<br>at Random<br>Number is in<br>Random Order | Played in<br>Random Order | Puzzles reveals random numbers<br>which must be put in the correct order<br>for the phone number to dial. |
 
 
-The **Control Module** will select a phone number based on the difficulty selected. In the case of a Hard difficulty the numbers will also be randomized. Then the **Control Module** will request playing the 4 puzzles (**Slide into Home**, **Hook me Up**, **Flip the Bits**, **Spin Digit**) in sequential or random order based on the difficulty. Once the 4 puzzles are solved, the **Control Module** will request playing the **Dialer** puzzle for the player to dial the correct phone number based on the results of the solved puzzles.
+The **Control Module** will select a phone number based on the difficulty selected. In the case of a Hard difficulty the numbers will also be randomized. Then the **Control Module** will request playing the 4 number determining puzzles (**Slide into Home**, **Hook me Up**, **Flip the Bits**, **Spin Digit**) in sequential or random order based on the difficulty. Once the 4 puzzles are solved, the **Control Module** will request playing the **Dialer** puzzle for the player to dial the correct phone number based on the results of the solved puzzles.
 
 Colors on the puzzle indicate the state of the puzzle:
 
@@ -168,7 +168,7 @@ If the puzzle needs the Player to Initialize the puzzle (reset the puzzle) the s
 
 During play the with Player will attempt to solve the puzzle using the instructions provided on the LCD screen. Meanwhile the clock on the Touchscreen will continue to count down. Once the puzzle has been solved, the clock will pause and instructions on how to interpret the number will be displayed on the Touchscreen. Once the Player has determined the number, they can press Next on the Touchscreen to continue to the next puzzle and the count down will continue.
 
-When all 4 number determining puzzles(**Slide into Home**, **Hook me Up**, **Flip the Bits**, **Spin Digit**) have been solved, the **COntrol Module** will start play on the **Dialer** puzzle for the Player to dial the right phone number to call home.
+When all 4 number determining puzzles(**Slide into Home**, **Hook me Up**, **Flip the Bits**, **Spin Digit**) have been solved, the **Control Module** will start play on the **Dialer** puzzle for the Player to dial the right phone number to call home.
 
 Upon dialing the correct phone number the count down will stop, a message saying the Player has won, and a tune will play.
 
