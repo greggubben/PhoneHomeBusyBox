@@ -173,3 +173,6 @@ When all 4 number determining puzzles(**Slide into Home**, **Hook me Up**, **Fli
 Upon dialing the correct phone number the count down will stop, a message saying the Player has won, and a tune will play.
 
 
+## Attribution
+
+I would like to thank [Playful Technology](https://www.youtube.com/@PlayfulTechnology) on YouTube for [introducing me to PJON as a cross module communication tool](https://www.youtube.com/watch?v=u8giZveqlxs&list=PLogiUurtMYtSxku2Itst0msCv8MC2w14P&index=1). 
