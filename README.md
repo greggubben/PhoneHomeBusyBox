@@ -44,6 +44,7 @@ title: Control Module and Puzzle Interactions
 sequenceDiagram
   participant control as Control Module
   participant puzzle as Puzzle
+
   Note right of puzzle: On Power, Set Puzzle State to "Startup"
   control->>puzzle: 'W'ake Up
   activate puzzle
@@ -51,10 +52,14 @@ sequenceDiagram
   puzzle->>puzzle: Set State to "Ready"
   puzzle->>control: 'A'cknowledge and Ready to Play
   deactivate puzzle
+
   control->>puzzle: 'S'tart playing with these number(s)
   activate puzzle
+
+  Note right of puzzle: Display how to Initialize Puzzle
   alt Puzzle needs Initialized
-    puzzle-->>control: 'I'nstructions needed
+    puzzle->>puzzle: Set State to "Initialize"
+    puzzle-->>control: 'I'nitialization needed
     activate control
     loop Up to 4 display lines
       control-->>puzzle: 'N'ext line of text
@@ -63,28 +68,37 @@ sequenceDiagram
       deactivate puzzle
     end
     deactivate control
+    puzzle->>puzzle: Wait for Player to Initialize Puzzle
   end
+
   puzzle-->>control: 'P'laying the game
-  Note right of puzzle: Display Playing instructions
+  puzzle->>puzzle: Set State to "Playing"
+  Note right of puzzle: Display how to Play Puzzle
   activate control
   loop Up to 4 display lines
-    control-->>puzzle: 'N'ext line of instructions
+    control-->>puzzle: 'N'ext line of text
     activate puzzle
-    puzzle-->>control: 'L'ine of instructions
+    puzzle-->>control: 'L'ine of text
     deactivate puzzle
   end
   deactivate control
+
+  puzzle->>puzzle: Wait for Player to Solve Puzzle
+
+  puzzle->>puzzle: Set State to "Solved"
   puzzle->>control: 'D'one playing
-  Note right of puzzle: Display number interpretation
+  Note right of puzzle: Display how to Interpret Number
   activate control
   loop Up to 4 display lines
-    control-->>puzzle: 'N'ext line of instructions
+    control-->>puzzle: 'N'ext line of text
     activate puzzle
-    puzzle-->>control: 'L'ine of instructions
+    puzzle-->>control: 'L'ine of text
     deactivate puzzle
   end
   deactivate control
+
   deactivate puzzle
+
 ```
 
 
@@ -94,14 +108,32 @@ sequenceDiagram
 title: Puzzle State Diagram
 ---
 stateDiagram-v2
+  state "Initialized?" as needsInitialized <<choice>>
   [*] --> Startup: Power Up
   Startup --> Ready: Control Wakes Up Puzzle
-  Ready --> Initialize: Puzzle needs to be Initialized
+  Ready --> needsInitialized: Control Starts Puzzle
+  needsInitialized --> Initialized: Puzzle needs to be Initialized
+  needsInitialized --> Playing: Puzzle is ready to Play
   Initialize --> Playing: Puzzle Initialized
-  Ready --> Playing: Puzzle is ready to be Played
+  Ready --> Playing: Puzzle is ready to Play
   Playing --> Done: Puzzle is Solved
   Done --> Ready: Control Wakes Up Puzzle for another game
+
+  classDef purple fill:#f0f
+  classDef blue fill:#00F
+  classDef red fill:#F00
+  classDef yellow fill:#FF0
+  classDef green fill:#0F0
+  classDef cyan fill:#0FF
+
+  class Startup purple
+  class Ready blue
+  class Initialize red
+  class Playing yellow
+  class Solved green
+
 ```
+
 
 
 ## Game Play
