@@ -108,29 +108,30 @@ sequenceDiagram
 title: Puzzle State Diagram
 ---
 stateDiagram-v2
-  state "Initialized?" as needsInitialized <<choice>>
+  state needsInitialized <<choice>>
+  needsInitialized: Initialize?
   [*] --> Startup: Power Up
   Startup --> Ready: Control Wakes Up Puzzle
   Ready --> needsInitialized: Control Starts Puzzle
-  needsInitialized --> Initialized: Puzzle needs to be Initialized
+  needsInitialized --> Initialize: Puzzle needs to be Initialized
   needsInitialized --> Playing: Puzzle is ready to Play
   Initialize --> Playing: Puzzle Initialized
   Ready --> Playing: Puzzle is ready to Play
   Playing --> Done: Puzzle is Solved
   Done --> Ready: Control Wakes Up Puzzle for another game
 
-  classDef purple fill:#f0f
-  classDef blue fill:#00F
-  classDef red fill:#F00
-  classDef yellow fill:#FF0
-  classDef green fill:#0F0
-  classDef cyan fill:#0FF
+  classDef purple fill:#f0f,font-weight:bold
+  classDef blue fill:#00F,color:white,font-weight:bold
+  classDef red fill:#F00,color:white,font-weight:bold
+  classDef yellow fill:#FF0,font-weight:bold
+  classDef green fill:#0F0,color:white,font-weight:bold
+  classDef cyan fill:#0FF,font-weight:bold
 
   class Startup purple
   class Ready blue
   class Initialize red
   class Playing yellow
-  class Solved green
+  class Done green
 
 ```
 
