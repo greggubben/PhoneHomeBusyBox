@@ -108,8 +108,10 @@ sequenceDiagram
 title: Puzzle State Diagram
 ---
 stateDiagram-v2
+  direction TB
+
   state needsInitialized <<choice>>
-  needsInitialized: Initialize?
+
   [*] --> Startup: Power Up
   Startup --> Ready: Control Wakes Up Puzzle
   Ready --> needsInitialized: Control Starts Puzzle
@@ -124,7 +126,7 @@ stateDiagram-v2
   classDef blue fill:#00F,color:white,font-weight:bold
   classDef red fill:#F00,color:white,font-weight:bold
   classDef yellow fill:#FF0,font-weight:bold
-  classDef green fill:#0F0,color:white,font-weight:bold
+  classDef green fill:#0F0,font-weight:bold
   classDef cyan fill:#0FF,font-weight:bold
 
   class Startup purple
