@@ -15,7 +15,8 @@ There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the 
 - [**Dialer**](DialerPuzzle) puzzle is where the number must be dialed correctly in order to phone home.
 
 
-##Layout
+
+## Layout
 
 The Phone Home Busy Box Briefcase layout looks like this:
 
@@ -28,14 +29,14 @@ The Phone Home Busy Box Briefcase layout looks like this:
 | 2 | **Hook me Up** | **Dialer** | **Spin Digit** | Power |
 
 
-##Architecture
+## Architecture
 
 Each module uses a single Arduino Nano to handle its part of the puzzle. Each of the 5 puzzle modules are capable of running individually with commands being sent through the USB Serial Monitor. When playing the full game, the **Control Module** sends the same commands to each of the puzzle modules in order.
 
 Communication happens using the [PJON \(Padded Jitterning Operative Network\)](https://github.com/gioblu/PJON) protocol over a single wire using [SoftwareBitBang](https://github.com/gioblu/PJON/tree/master/src/strategies/SoftwareBitBang). A common library, [PhoneHomeLib](PhoneHomeLib), is used to establish a common communication language between the **Control Module** and the puzzle modules.
 One of the risks of a single wire protocol is collisions with multiple devices trying to communicate at once. This is handled by following a request-response pattern and only having one puzzle active at a time. The **Control Module** activates each puzzle when it is that puzzle's time to be played which removes communication conflicts. The state is synchronized between the puzzle and **Control Module** using the following sequence diagram and state machine:
 
-###Sequence Diagram
+### Sequence Diagram
 ```mermaid
 ---
 title: Control Module and Puzzle Interactions
@@ -59,7 +60,7 @@ sequenceDiagram
       control-->>puzzle: 'N'ext line of text
       activate puzzle
       puzzle-->>control: 'L'ine of text
-      deactivate puzzle:
+      deactivate puzzle
     end
     deactivate control
   end
@@ -70,7 +71,7 @@ sequenceDiagram
     control-->>puzzle: 'N'ext line of instructions
     activate puzzle
     puzzle-->>control: 'L'ine of instructions
-    deactivate puzzle:
+    deactivate puzzle
   end
   deactivate control
   puzzle->>control: 'D'one playing
@@ -80,13 +81,14 @@ sequenceDiagram
     control-->>puzzle: 'N'ext line of instructions
     activate puzzle
     puzzle-->>control: 'L'ine of instructions
-    deactivate puzzle:
+    deactivate puzzle
   end
   deactivate control
   deactivate puzzle
 ```
 
-###State Diagram
+
+### State Diagram
 ```mermaid
 ---
 title: Puzzle State Diagram
@@ -102,7 +104,7 @@ stateDiagram-v2
 ```
 
 
-##Game Play
+## Game Play
 
 When the briefcase is powered up, the **Control Module** pings each puzzle module to confirm it is present. Each puzzle confirms it is functioning and lets the **Control Module** know it is ready to play. The **Control Module** will then ask the player to select the level of difficulty.
 
