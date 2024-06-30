@@ -106,7 +106,7 @@ sequenceDiagram
 
 ### State
 
-Each puzzle manages their state shares that state with the **Control Module**. The following describes each of the puzzle module states:
+Each puzzle manages their state and shares that state with the **Control Module**. The following describes each of the puzzle module states:
 
 - **Starting** state indicates the module has performed the setup functions and is waiting for the **Control Module** to acknowledge its presence.
 - **Ready** state indicates the puzzle is ready to play. This state occurs after the **Control Module** has acknowledged the module's presence and the module performed the self checks.
@@ -129,11 +129,11 @@ stateDiagram-v2
   [*] --> Startup: Power Up
   Startup --> Ready: Control Wakes Up Puzzle
   Ready --> needsInitialized: Control Starts Puzzle
-  needsInitialized --> Initialize: Puzzle needs to be Initialized
-  needsInitialized --> Playing: Puzzle is ready to Play
+  needsInitialized --> Initialize: Puzzle<BR>needs to be<BR>Initialized
+  needsInitialized --> Playing: Puzzle<BR>is ready to<BR>Play
   Initialize --> Playing: Puzzle Initialized
   Playing --> Done: Puzzle is Solved
-  Done --> Ready: Control Wakes Up Puzzle<br>for another game
+  Done --> Ready: Control Wakes Puzzle<br>for another game
 
   classDef purple fill:#f0f,font-weight:bold
   classDef blue fill:#00F,color:white,font-weight:bold
