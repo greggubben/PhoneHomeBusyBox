@@ -1,5 +1,8 @@
 # Phone Home Busy Box
 
+![Picture of the Phone Home Busy Box Briefcase](images/Briefcase.jpg)
+
+Picture of the completed Phone Home Busy Box Briefcase.
 
 ## Overview
 
@@ -13,6 +16,9 @@ There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the 
 - [**Flip the Bits**](FlipBits) puzzle uses switches to reveal a hexidecimal number that must be converted to a base ten number.
 - [**Spin Digit**](SpinDigit) puzzle has the player make all the bars go out by spinning the number wheels to reveal the number.
 - [**Dialer**](DialerPuzzle) puzzle is where the number must be dialed correctly in order to phone home.
+
+Library
+- [**Phone Home Library**](PhoneHomeLib) is the common code and definitions used by all modules.
 
 
 
@@ -34,108 +40,7 @@ The Phone Home Busy Box Briefcase layout looks like this:
 Each module uses a single Arduino Nano to handle its part of the puzzle. Each of the 5 puzzle modules are capable of running individually with commands being sent through the USB Serial Monitor. When playing the full game, the **Control Module** sends the same commands to each of the puzzle modules in order.
 
 Communication happens using the [PJON \(Padded Jitterning Operative Network\)](https://github.com/gioblu/PJON) protocol over a single wire using [SoftwareBitBang](https://github.com/gioblu/PJON/tree/master/src/strategies/SoftwareBitBang). A common library, [PhoneHomeLib](PhoneHomeLib), is used to establish a common communication language between the **Control Module** and the puzzle modules.
-One of the risks of a single wire protocol is collisions with multiple devices trying to communicate at once. This is handled by following a request-response pattern and only having one puzzle active at a time. The **Control Module** activates each puzzle when it is that puzzle's time to be played which removes communication conflicts. The state is synchronized between the puzzle and **Control Module** using the following sequence diagram and state machine:
-
-### Sequence Diagram
-```mermaid
----
-title: Control Module and Puzzle Interactions
----
-sequenceDiagram
-  participant control as Control Module
-  participant puzzle as Puzzle
-
-  Note right of puzzle: On Power, Set Puzzle State to "Startup"
-  control->>puzzle: 'W'ake Up
-  activate puzzle
-  puzzle->>puzzle: Check and Flash display
-  puzzle->>puzzle: Set State to "Ready"
-  puzzle->>control: 'A'cknowledge and Ready to Play
-  deactivate puzzle
-
-  control->>puzzle: 'S'tart playing with these number(s)
-  activate puzzle
-
-  alt Puzzle needs Initialized
-    puzzle->>puzzle: Set State to "Initialize"
-    puzzle-->>control: 'I'nitialization needed
-    activate control
-    Note right of puzzle: Display how to Initialize Puzzle
-    loop Up to 4 display lines
-      control-->>puzzle: 'N'ext line of text
-      activate puzzle
-      puzzle-->>control: 'L'ine of text
-      deactivate puzzle
-    end
-    deactivate control
-    puzzle->>puzzle: Wait for Player to Initialize Puzzle
-  end
-
-  puzzle->>puzzle: Set State to "Playing"
-  puzzle-->>control: 'P'laying the game
-  activate control
-  Note right of puzzle: Display how to Play Puzzle
-  loop Up to 4 display lines
-    control-->>puzzle: 'N'ext line of text
-    activate puzzle
-    puzzle-->>control: 'L'ine of text
-    deactivate puzzle
-  end
-  deactivate control
-
-  puzzle->>puzzle: Wait for Player to Solve Puzzle
-
-  puzzle->>puzzle: Set State to "Solved"
-  puzzle->>control: 'D'one playing
-  activate control
-  Note right of puzzle: Display how to Interpret Number
-  loop Up to 4 display lines
-    control-->>puzzle: 'N'ext line of text
-    activate puzzle
-    puzzle-->>control: 'L'ine of text
-    deactivate puzzle
-  end
-  deactivate control
-
-  deactivate puzzle
-
-```
-
-
-### State Diagram
-```mermaid
----
-title: Puzzle State Diagram
----
-stateDiagram-v2
-  direction TB
-
-  state needsInitialized <<choice>>
-
-  [*] --> Startup: Power Up
-  Startup --> Ready: Control Wakes Up Puzzle
-  Ready --> needsInitialized: Control Starts Puzzle
-  needsInitialized --> Initialize: Puzzle needs to be Initialized
-  needsInitialized --> Playing: Puzzle is ready to Play
-  Initialize --> Playing: Puzzle Initialized
-  Playing --> Done: Puzzle is Solved
-  Done --> Ready: Control Wakes Up Puzzle<br>for another game
-
-  classDef purple fill:#f0f,font-weight:bold
-  classDef blue fill:#00F,color:white,font-weight:bold
-  classDef red fill:#F00,color:white,font-weight:bold
-  classDef yellow fill:#FF0,font-weight:bold
-  classDef green fill:#0F0,font-weight:bold
-  classDef cyan fill:#0FF,font-weight:bold
-
-  class Startup purple
-  class Ready blue
-  class Initialize red
-  class Playing yellow
-  class Done green
-
-```
-
+For more details on the common architecture see the [Readme](PhoneHomeLib) in the [PhoneHomeLib](PhoneHomeLib).
 
 
 ## Game Play
