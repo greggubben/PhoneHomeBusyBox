@@ -29,13 +29,13 @@ The following is a Fritzing diagram of the connections.
 
 This is slider fully soldered up. The slider potentiometers are sandwiched to the Arduino circuit board. Headers are used to connect the 2 boards. JST connectors are used connect the NeoPixel and meter. Another JST is used to connect the Arduino to the briefcase bus and the Controller.
 
-Top view of Soldered Slider
+Top view of Soldered Slider<br>
 ![Picture of soldered Slide into Home](../images/Slider_Soldered_Top.jpg)
 
-Side view of Soldered Slider
+Side view of Soldered Slider<br>
 ![Picture of soldered Slide into Home](../images/Slider_Soldered_Side.jpg)
 
-Bottom view of Soldered Slider
+Bottom view of Soldered Slider<br>
 ![Picture of soldered Slide into Home](../images/Slider_Soldered_Bottom.jpg)
 
 
@@ -59,9 +59,9 @@ When the puzzle is solved the sliders stop being read and the voltmeter is left 
 
 A piece of scrap 1/4 inch MDF was used to test the layout and fit all the parts. Once the layout for the puzzle was complete the puzzle was test fitted into the briefcase for testing with the other puzzles and control module. The MDF prototype was used as a template for the final 1/4 inch birch plywood. The final plywood was stained and clear coated.  Sides were added so the puzzle could be pulled out of the briefcase and set on the desk when connected directly to the computer for development. In addition wiring clips were added to the sides to keep the wires tidy.
 
-Top view of the prototype Slider showing the placement of all the components.
+Top view of the prototype Slider showing the placement of all the components.<br>
 ![Picture of prototype Slide into Home](../images/Slider_Prototype_Top.jpg)
 
-Bottom view of the finished Slider showing the wire organization.
+Bottom view of the finished Slider showing the wire organization.<br>
 ![Picture of finished Slide into Home module](../images/Slider_Finished_Bottom.jpg)
 
