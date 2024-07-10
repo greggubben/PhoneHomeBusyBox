@@ -19,13 +19,19 @@ The sliders are Alpha [RA3045F-20G-15LC-B10K](https://www.mouser.com/ProductDeta
 
 The display uses a [+/- 15V DC Analog Panel Meter](https://www.adafruit.com/product/4403) from Adafruit. The internal resister was removed so the Arduino Nano could drive the meter using PWM. The meter is wired to pins 9 and 10 so the voltage can be reversed to show negative numbers. Pin 9 is connected to the Plus terminal on the voltmeter and pin 10 is connected to the Negative terminal.
 
+The following is a Fritzing diagram of the connections.
+
+![Breadboard Diagram](../images/Slider_Breadboard_Diagram.jpg)
+
  The following photo shows the puzzle initially created on the breadboard. The sliding potentiometers were having difficulty staying put in the breadboard so I had to solder them onto a perfboard to complete my testing.
 
 ![Breadboard picture of Slide into Home](../images/Slider_Breadboard.jpg)
 
 This is slider fully soldered up. The slider potentiometers are sandwiched to the Arduino circuit board. Headers are used to connect the 2 boards. JST connectors are used connect the NeoPixel and meter. Another JST is used to connect the Arduino to the briefcase bus and the Controller.
 
+![Picture of soldered Slide into Home](../images/Slider_Soldered_Top.jpg)
 ![Picture of soldered Slide into Home](../images/Slider_Soldered_Side.jpg)
+![Picture of soldered Slide into Home](../images/Slider_Soldered_Bottom.jpg)
 
 
 ## Software
