@@ -19,10 +19,12 @@ The standoffs are simple insulated posts. A bracket was soldered between the pos
 
 The lights are wired up to A2, A3, A4, and A5.
 
-The following is a Fritzing diagram of the connections.<BR>
+The following is a Fritzing diagram of the connections.
+
 ![Breadboard Diagram](../images/ConnectWires_Breadboard_Diagram.jpg)
 
-The following photo shows the puzzle initially created on the breadboard.<BR>
+The following photo shows the puzzle initially created on the breadboard. Breadboard jumper wires were used instead of clipleads and LEDs were used instead of the lights.
+
 ![Breadboard picture of Hook Me Up](../images/ConnectWires_Breadboard.jpg)
 
 The Hook Me Up puzzle is soldered on to a single 5cmx7cm 2.54mm double sided prototype PCB circuit board. The Arduino Nano is placed on headers. The connection to the bus is made at the top of the Arduino Nano using a 3 pin JST connector. The neopixel state indicator LED is connected using a 3 pin JST connector as well. The wires to the standoffs are color coded and attached to screwdown terminal blocks. The lights are connected using 2 pin JST connectors.
