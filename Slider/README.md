@@ -23,11 +23,13 @@ The following is a Fritzing diagram of the connections.
 
 ![Breadboard Diagram](../images/Slider_Breadboard_Diagram.jpg)
 
- The following photo shows the puzzle initially created on the breadboard. The sliding potentiometers were having difficulty staying put in the breadboard so I had to solder them onto a perfboard to complete my testing.
+The following photo shows the puzzle initially created on the breadboard. The sliding potentiometers were having difficulty staying put in the breadboard so I had to solder them onto a perfboard to complete my testing.
 
 ![Breadboard picture of Slide into Home](../images/Slider_Breadboard.jpg)
 
-This is slider fully soldered up. The slider potentiometers are sandwiched to the Arduino circuit board. Headers are used to connect the 2 boards. JST connectors are used connect the NeoPixel and meter. Another JST is used to connect the Arduino to the briefcase bus and the Controller.
+The Side into Home is soldered on to 2 boards sandwiched together and connected using 2 sets of headers. One set of headers is for reading the slider potentiometer values and the other is for controlling the corresponding LEDs on the sliders.
+The Arduino Nano is soldered on to a single 5cmx7cm 2.54mm double sided prototype PCB circuit board using headers. The connection to the bus is made at the top of the Arduino Nano using a 3 pin JST connector. The neopixel state indicator LED is connected using a 3 pin JST connector as well. A 2 pin JST connector is used to connect the voltmeter.
+The slider potentiometers are soldered to a fiberglass perf board cut to the same size at the PCB prototype board used for the Arduino Nano.
 
 Top view of Soldered Slider<br>
 ![Picture of soldered Slide into Home](../images/Slider_Soldered_Top.jpg)
