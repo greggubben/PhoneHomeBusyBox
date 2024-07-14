@@ -1,6 +1,6 @@
 # Hook Me Up
 
-Number revealing puzzle
+This puzzle reveals 1 digit. While technically 4 bits can go to 2 digits, the range is limited to 16 and therefore not suitable for revealing a full 2 digit number.
 
 ## Overview
 
@@ -21,16 +21,16 @@ The lights are wired up to A2, A3, A4, and A5.
 
 The following is a Fritzing diagram of the connections.
 
-![Breadboard Diagram](../images/ConnectWires_Breadboard_Diagram.jpg)
+![Breadboard Diagram](../images/HookMeUp_Breadboard_Diagram.jpg)
 
 The following photo shows the puzzle initially created on the breadboard. Breadboard jumper wires were used instead of clipleads and LEDs were used instead of the lights.
 
-![Breadboard picture of Hook Me Up](../images/ConnectWires_Breadboard.jpg)
+![Breadboard picture of Hook Me Up](../images/HookMeUp_Breadboard.jpg)
 
 The Hook Me Up puzzle is soldered on to a single 5cmx7cm 2.54mm double sided prototype PCB circuit board. The Arduino Nano is placed on headers. The connection to the bus is made at the top of the Arduino Nano using a 3 pin JST connector. The neopixel state indicator LED is connected using a 3 pin JST connector as well. The wires to the standoffs are color coded and attached to screwdown terminal blocks. The lights are connected using 2 pin JST connectors.
 
 Soldered Hook Me Up<br>
-![Picture of soldered Hook Me Up](../images/ConnectWires_Soldered.jpg)
+![Picture of soldered Hook Me Up](../images/HookMeUp_Soldered.jpg)
 
 
 ## Software
@@ -54,9 +54,9 @@ When the puzzle is solved the connections stop being tested and the lights show 
 A piece of scrap 1/4 inch MDF was used to test the layout and fit all the parts. Once the layout for the puzzle was complete the puzzle was test fitted into the briefcase for testing with the other puzzles and control module. The MDF prototype was used as a template for the final 1/4 inch birch plywood. The final plywood was stained and clear coated.  Sides were added so the puzzle could be pulled out of the briefcase and set on the desk when connected directly to the computer for development. In addition wiring clips were added to the sides to keep the wires tidy.
 
 Top view of the prototype Hook Me Up showing the placement of all the components.<br>
-![Picture of prototype Hook Me Up](../images/ConnectWires_Prototype_Top.jpg)
+![Picture of prototype Hook Me Up](../images/HookMeUp_Prototype_Top.jpg)
 
 Bottom view of the finished Hook Me Up showing the wire organization.<br>
-![Picture of finished Hook Me Up module](../images/ConnectWires_Finished_Bottom.jpg)
+![Picture of finished Hook Me Up module](../images/HookMeUp_Finished_Bottom.jpg)
 
 The holes for the components are labeled in color indicating which wire or light should be attached where.

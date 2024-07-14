@@ -12,7 +12,7 @@ There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the 
 
 - [**Control Module**](Controller) handles the flow of the game.
 - [**Slide into Home**](Slider) puzzle is where sliders are moved to reveal the number on the analog meter.
-- [**Hook Me Up**](ConnectWires) puzzle has the player connect wires between the top(Brown) and bottom(White) terminals to turn lights on if off or off if on revealing a binary number that must be converted to a base ten number.
+- [**Hook Me Up**](HookMeUp) puzzle has the player connect wires between the top(Brown) and bottom(White) terminals to turn lights on if off or off if on revealing a binary number that must be converted to a base ten number.
 - [**Flip the Bits**](FlipBits) puzzle uses switches to reveal a hexidecimal number that must be converted to a base ten number.
 - [**Spin Digit**](SpinDigit) puzzle has the player make all the bars go out by spinning the number wheels to reveal the number.
 - [**Dialer**](DialerPuzzle) puzzle is where the number must be dialed correctly in order to phone home.
