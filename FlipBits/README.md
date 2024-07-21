@@ -94,4 +94,4 @@ Top view of the prototype Flip the Bits showing the placement of all the compone
 Bottom view of the finished Flip the Bits showing the wire organization.<br>
 ![Picture of finished Flip the Bits module](../images/FlipBits_Finished_Bottom.jpg)
 
-The holes for the components are labeled in color indicating which wire or light should be attached where.
+The holes for the switches are labeled in color indicating which switch should be attached where. The colors match resistor colors and are mapped 2^x where x is the resister color equivalent.
