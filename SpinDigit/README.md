@@ -4,7 +4,7 @@ This puzzle reveals 3 digits.
 
 ## Overview
 
-This puzzle uses 3 rotary switches and 2 10 bar LED displays. The 3 rotary switches represent each of the 3 digits. As each rotary switch is turned it changes the number of LEDs lit on the 2 10 bar display. The goal is to make all the bars disappear as in nothing is lit up on the 2 10 bar LED didplays.
+This puzzle uses 3 rotary switches and 2 10-segment LED Bar Graph displays. The 3 rotary switches represent each of the 3 digits. As each rotary switch is turned it changes the number of LEDs lit on the 2 10-segment LED Bar Graph display. The goal is to make all the bars disappear as in nothing is lit up on the 2 10 bar LED didplays.
 When solved, the number on the 3 rotary switched is the number to use.
 
 ![Picture of finished Spin Digit module](../images/SpinDigit_Finished_Top.jpg)
@@ -12,7 +12,7 @@ When solved, the number on the 3 rotary switched is the number to use.
 
 ## Hardware
 
-The puzzle uses an Arduino Nano as the processor and 2 digital pins drive each of the 10 bar LED displays through PWM. A MCP23O17 reads the binary value from the 3 rotary switches and is connected to the Arduino Nano via I2C.
+The puzzle uses an Arduino Nano as the processor and 2 digital pins drive each of the LED Bar Graph displays through PWM. A MCP23O17 reads the binary value from the 3 rotary switches and is connected to the Arduino Nano via I2C.
 
 The Arduino Nano manages the state of the puzzle which is reflected in the [8mm NeoPixel](https://www.adafruit.com/product/1734) LED from Adafruit. See the [PhoneHome_PuzzleState.h](../PhoneHomeLib/PhoneHome_PuzzleState.h) for states and colors. The [PhoneHome_Definitions.h](../PhoneHomeLib/PhoneHome_Definitions.h) file contains the standard pins used by all Arduino Nanos.
 
@@ -53,12 +53,12 @@ The rotary switches are arranged as a row of 3. The Adafruit library is used for
 
 The number on the display is calculated by summing the absolute value each read digit is away from the correspondng target number. This digitsAway number is the number of LEDs that should be lit on the Bar Graphs. The right 10-segment LED Bar Graph display is for Odd numbers and is connected to pin 5. The left LED Bar Graph represents Even numbers and is connected to pin 6. The value for the Even number (left) display is determined by dividing the digitsAway number by 2. The value for the Odd number (right) display is determined by adding the modulo of digitsAway by 2 plus the Even number.
 
-During Wake the puzzle will turn on all the LED segments in both 10-segment LED Bar Graph displays and then turn them back off.
+During Wake the puzzle will turn on all the LED segments in both 10-segment LED Bar Graph displays and then turn them back off. The rotary switches also have a light and those are turn on and then off as well.
 
-During Initialize the puzzle checks that all the rotary switches are set to 0. The difficulty is handled by the controller so nothing unique is performed by the puzzle.
+During Initialize the puzzle checks that all the rotary switches are set to 0. The difficulty is handled by the controller so nothing unique is performed by the puzzle. The light for the rotary switches is turned on as well.
 
-During Play, the rotary switches are read, the digitsAway is calculated, and its value is displayed as lit LED Bars. If the number is 20 or over all the LEDs are lit up.
-When the target number is discovered, all play stops and the puzzle is considered solved.
+During Play, the rotary switches are read, the digitsAway is calculated, and its value is displayed as lit LED Bars. If the number is 20 or over all the LEDs are lit up. The light for the rotary switches is turned on as well.
+When the target number is discovered, all play stops and the puzzle is considered solved. When solved, the light for the rotary switches is turned off.
 
 When the puzzle is solved the rotary switches stop being read and the value on the switches is the target number.
 
