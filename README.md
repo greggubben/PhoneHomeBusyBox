@@ -17,8 +17,9 @@ There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the 
 - [**Spin Digit**](SpinDigit) puzzle has the player make all the bars go out by spinning the number wheels to reveal the number.
 - [**Dialer**](DialerPuzzle) puzzle is where the number must be dialed correctly in order to phone home.
 
-Library
+Supporting
 - [**Phone Home Library**](PhoneHomeLib) is the common code and definitions used by all modules.
+- [**Power Module**](Power) delivers the power to all the modules and creates the PJON data bus for all the modules to communnicate.
 
 
 
