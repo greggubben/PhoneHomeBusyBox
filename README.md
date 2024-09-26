@@ -6,7 +6,15 @@ Picture of the completed Phone Home Busy Box Briefcase.
 
 ## Overview
 
-This is a collection of repositories for a Busy Box placed into a briefcase. The purpose of the Busy Box is to determine a phone number by solving 4 puzzles. This phone number must be dialed in the 5<sup>th</sup> puzzle before time runs out.
+Growing up half of my basement was an electronics lab filled with all sorts of electronic parts. My dad worked for RCA and through RCA supllied many radios to NASA, specifically the Apollo missions. When he passed, I inherited all different kinds of electronic components.
+
+The project started, as most of my projects do, with the question:  What can I do with all these parts?  What became the Phone Home Busy Box Briefcase was inspired by a busy box my dad created for us kids. It had a group of lights and switches along with a rotary phone dialer. As you flipped switches and dialed the phone, the lights would change.
+
+The project started as a bunch of boxes with parts.
+
+![Picture of the parts organized into boxes](images/PhoneHomeBusyBox_BoxesOfParts.jpg)
+
+This git repository is a collection of repositories for a Busy Box placed into a briefcase. The purpose of the Busy Box is to determine a phone number by solving 4 puzzles. This phone number must be dialed in the 5<sup>th</sup> puzzle before time runs out.
 
 There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the power module and does not require any code.
 
@@ -20,7 +28,6 @@ There are 6 repositories for 6 of the modules. The 7<sup>th</sup> module is the 
 Supporting
 - [**Phone Home Library**](PhoneHomeLib) is the common code and definitions used by all modules.
 - [**Power Module**](Power) delivers the power to all the modules and creates the PJON data bus for all the modules to communnicate.
-
 
 
 ## Layout
