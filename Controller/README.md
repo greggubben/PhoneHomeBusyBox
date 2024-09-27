@@ -4,6 +4,8 @@ This module manages the game play between all the puzzles and is the primary inp
 
 ## Overview
 
+The song that is played, when the game is won, is inspired by the early days of computing where many people wrote code to have their homemade computers play [The Entertainer](https://en.wikipedia.org/wiki/The_Entertainer_(rag)). When I first learned to program microcomputers on a [6502 based Datac 1000](https://oldcomputermuseum.com/datac-1000.html), the course taught you to write a program to play The Entertainer. My dad actually wrote the code to play songs on an Arduino and my son converted the music to the notes instructions.
+
 The controller uses a LOLIN 2.4 Touch Screen display and a 20x4 character LCD Display. There is also a speaker to play the winning tune.
 
 ![Picture of finished Controller module](../images/Controller_Finished_Top.jpg)
