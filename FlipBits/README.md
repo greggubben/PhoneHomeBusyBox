@@ -7,6 +7,8 @@ This puzzle reveals 2 digits. While technically a byte (8 bits) can go to 3 digi
 This puzzle uses 8 switches in 2 rows of 4 and 2 7-segment displays. The 8 switches represent each of 8 bits. As each switch is flipped it changes the value of a byte. The byte is displayed on the 2 7-segment displays. The display flashes "Hi" or "Lo" depending on whether the number displayed is higher or lower than the target number.
 When solved, the display reveals the hex representation of the number to use. A [Hexidaisy Hexidecimal Calculator](https://www.computerhistory.org/collections/catalog/102757130) is provided to convert the hex to decimal using the hex to decimal conversion pairing along the edge.
 
+The switches are from a collection of switches my Dad had in the basement. We used those switches in many projects. It seemed right they should be used here as well. The Hexidaisy came from the Microprocessor course I bought from one of my Dad's coworkers who did not think much of microprocessors.
+
 ![Picture of finished Flip the Bits module](../images/FlipBits_Finished_Top.jpg)
 
 
