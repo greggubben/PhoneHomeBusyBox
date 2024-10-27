@@ -6,6 +6,8 @@ This puzzle reveals 1 digit. While technically 4 bits can go to 2 digits, the ra
 
 This puzzle uses 8 standoffs in 2 rows of 4 and 1 row of 4 lights. Clipleads are connected from the bottom row to the top row. If the connection is correct a light will either turn off if it was initially on or turn on if it was initially off. The puzzle is solved when each of the 4 lights remain changed from on to off or off to on. When solved, the lights reveal the binary representation of the number to use. A [Hexidaisy Hexidecimal Calculator](https://www.computerhistory.org/collections/catalog/102757130) is provided to convert the binary to decimal using the binary to hexidecimal table on the front. (the number is only between 0 and 9)
 
+The 4 lights are a nod to the "Busy Box" my Dad made for us kids that would blink and change when a number was dialed by the rotary dial. We used clip leads all the time while prototyping projects in the basement. I found the terminal posts in a parts bin organizer my Dad had.
+
 ![Picture of finished Hook Me Up module](../images/HookMeUp_Finished_Top.jpg)
 
 
