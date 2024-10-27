@@ -4,7 +4,7 @@ This puzzle reveals 7 digits. Well technically it uses 7 digits revealed by the 
 
 ## Overview
 
-This puzzle uses a rotary phone dialer, knife switch and a [DFPlayer](https://wiki.dfrobot.com/DFPlayer_Mini_SKU_DFR0299) from DF Robot.
+This puzzle uses a rotary phone dialer, knife switch and a [DFPlayer](https://wiki.dfrobot.com/DFPlayer_Mini_SKU_DFR0299) from DF Robot. The Dialer is a nod to a "Busy Box" my dad made for us kids where he connected a rotary phone dialer to a group of 4 lights which would change when a number was dialed. The knife switch was used in our basement to connect a 300 baud modem to the phone line. The person upstairs would stomp on the floor, when the number was dialed, to tell the person in the basement to throw the knife switch. This was how we dialed into computers in the early 80s because the modem could not dial a number.
 
 ![Picture of finished Dialer Puzzle module](../images/Dialer_Finished_Top.jpg)
 
