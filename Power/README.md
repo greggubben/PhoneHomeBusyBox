@@ -4,7 +4,7 @@ This module delivers power to the entire briefcase.
 
 ## Overview
 
-The power module uses a bus to deliver +5V to all the other modules.
+The power module uses a bus to deliver +5V to all the other modules. The Blinking LED is referenced by the [Achtung!](https://en.wikipedia.org/wiki/Blinkenlights) sign my Dad brought home from work in the late 70s. My Dad worked for RCA and I found an RCA badge so I put it on the Power module. The briefcase is the same one that was used to hold the Datac 1000 and course material for the microprocessor training course by Dad took in the late 70s.
 
 ![Picture of finished Power module](../images/Power_Finished_Top.jpg)
 
