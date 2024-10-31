@@ -6,6 +6,8 @@ Number revealing puzzle
 
 This puzzle uses 3 Sliders to adjust the value on a voltmeter. The sliders will adjust where the needle is pointing on the voltmeter. Each slider is capable of changing the voltmeter between 0(bottom) and 9(top) places. Starting with the left slider, when the number is discovered the led will light up. However the puzzle is not solved until all sliders are moved from the bottom. Using the 2 leftmost sliders, the 2 leds will light up when the number is discovered. It is possible to have all 3 leds lit up, but the puzzle is not solved because the sliders must be further apart. When solved, the vaule pointed to by the needle on the voltmeter is the number to use.
 
+The voltmeter is a new component because all the meters we had in the basement when growing up have been incorporated into other projects. The slider pots with LEDs I had aquired a while ago and could not figure out what to do with them until this project came along. The LEDs on the sliders provide interesting feedback.
+
 ![Picture of finished Slide into Home module](../images/Slider_Finished_Top.jpg)
 
 
