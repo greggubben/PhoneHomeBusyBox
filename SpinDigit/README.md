@@ -7,6 +7,8 @@ This puzzle reveals 3 digits.
 This puzzle uses 3 rotary switches and 2 10-segment LED Bar Graph displays. The 3 rotary switches represent each of the 3 digits. As each rotary switch is turned it changes the number of LEDs lit on the 2 10-segment LED Bar Graph display. The goal is to make all the bars disappear as in nothing is lit up on the 2 10 bar LED didplays.
 When solved, the number on the 3 rotary switched is the number to use.
 
+The 10-segment LED Bar Graph display and LM3914 are throwbacks to the 70s when CBs were all the rage. We had a slide in plate installed in the cars that would accept the CB and connect it up to power and the antenna in the trunk. My Dad's Maverik had battery issues so he created an LED bar display using a LM3914 to show battery voltage and mounted it to a spare CB mount so it could be inserted into his car. The LM3914 is one of his spares, but the 10-segment LED Bar Graph is new. I do not know where the Number Dials came from, but I suspect it was used to dial in a frequency on some device.
+
 ![Picture of finished Spin Digit module](../images/SpinDigit_Finished_Top.jpg)
 
 
